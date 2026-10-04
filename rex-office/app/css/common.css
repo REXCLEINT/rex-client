@@ -237,6 +237,6 @@ svg.lucide { width: 18px; height: 18px; stroke-width: 1.8; flex: none; }
 ::-webkit-scrollbar-track { background: transparent; }
 
 @media print {
-  body { background: #fff !important; overflow: visible !important; display: block; height: auto; }
+  html, body { background: #fff !important; overflow: visible !important; display: block; height: auto; }
   .titlebar, .tabs, .ribbon, .statusbar, .backstage, .no-print { display: none !important; }
 }

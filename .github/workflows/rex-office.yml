@@ -1,0 +1,34 @@
+# Baut REX Office für Windows (Installer + portable .exe) und stellt die Dateien als Download bereit.
+# Läuft nur, wenn sich etwas im Ordner rex-office/ ändert, oder manuell über "Run workflow".
+# Es werden bewusst KEINE Releases erstellt, damit die Updates des REX Clients unberührt bleiben.
+name: REX Office (Windows)
+
+on:
+  push:
+    paths:
+      - 'rex-office/**'
+      - '.github/workflows/rex-office.yml'
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: rex-office
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: rex-office/package-lock.json
+      - run: npm ci
+      - run: npm run dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: REX-Office-Windows
+          path: |
+            rex-office/dist/REX-Office-Setup-*.exe
+            rex-office/dist/REX-Office-Portable-*.exe
+          if-no-files-found: error

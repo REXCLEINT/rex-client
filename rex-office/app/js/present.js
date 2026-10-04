@@ -612,9 +612,11 @@
     const o = { x: el.x, y: el.y, w: el.w, h: el.h, rot: el.rot || 0 };
     const keepRatio = el.type === 'image' && h.length === 2;
     const ratio = o.w / Math.max(1, o.h);
-    const node = canvas.querySelector(`.el[data-id="${el.id}"]`);
+    const nodeOf = () => canvas.querySelector(`.el[data-id="${el.id}"]`);
     const mv = ev => {
       const p = toSlide(ev);
+      const node = nodeOf();
+      if (!node) return;
       if (h === 'rot') {
         const cx = o.x + o.w / 2, cy = o.y + o.h / 2;
         let a = Math.atan2(p.y - cy, p.x - cx) * 180 / Math.PI + 90;
@@ -1335,7 +1337,11 @@
   function extractParas(inner) {
     const paras = [];
     let curP = null;
-    const blockAlign = (el) => { const a = getComputedStyle(el).textAlign; return a === 'start' ? 'left' : a === 'end' ? 'right' : a; };
+    const blockAlign = (el) => {
+      if (!(el instanceof Element)) el = el && el.alignEl instanceof Element ? el.alignEl : inner;
+      const a = getComputedStyle(el).textAlign;
+      return a === 'start' ? 'left' : a === 'end' ? 'right' : a;
+    };
     const runOf = (textNode) => {
       const p = textNode.parentElement;
       const cs = getComputedStyle(p);
@@ -1374,7 +1380,7 @@
           for (const ch of li.childNodes) {
             if (ch.nodeType === 1 && (ch.tagName === 'UL' || ch.tagName === 'OL')) block(ch, level + 1);
             else if (ch.nodeType === 1 && /^(P|DIV)$/.test(ch.tagName)) inline(ch);
-            else inline({ childNodes: [ch] });
+            else inline({ childNodes: [ch], alignEl: li });
           }
           curP = null;
         }
@@ -1386,7 +1392,7 @@
     }
     for (const ch of inner.childNodes) {
       if (ch.nodeType === 1 && /^(P|DIV|H[1-6]|UL|OL|BLOCKQUOTE)$/.test(ch.tagName)) { curP = null; block(ch, 0); }
-      else inline({ childNodes: [ch], tagName: 'SPAN' });
+      else inline({ childNodes: [ch], alignEl: inner });
     }
     // Trailing <br> in Absaetzen entfernen
     for (const p of paras) while (p.runs.length > 1 && p.runs[p.runs.length - 1].br) p.runs.pop();

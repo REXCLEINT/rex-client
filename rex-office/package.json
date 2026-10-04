@@ -8,12 +8,13 @@
   "license": "MIT",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --win nsis portable",
+    "dist": "electron-builder --win nsis portable --x64",
     "dist:dir": "electron-builder --win --dir"
   },
   "devDependencies": {
     "electron": "^33.2.0",
-    "electron-builder": "^25.1.8"
+    "electron-builder": "^25.1.8",
+    "rcedit": "^4.0.1"
   },
   "build": {
     "appId": "de.rex.office",
@@ -28,24 +29,57 @@
       "buildResources": "build"
     },
     "fileAssociations": [
-      { "ext": "docx", "name": "Word-Dokument", "description": "Word-Dokument", "role": "Editor" },
-      { "ext": "xlsx", "name": "Excel-Arbeitsmappe", "description": "Excel-Arbeitsmappe", "role": "Editor" },
-      { "ext": "pptx", "name": "PowerPoint-Präsentation", "description": "PowerPoint-Präsentation", "role": "Editor" },
-      { "ext": "csv", "name": "CSV-Datei", "description": "CSV-Datei", "role": "Editor" }
+      {
+        "ext": "docx",
+        "name": "Word-Dokument",
+        "description": "Word-Dokument",
+        "role": "Editor"
+      },
+      {
+        "ext": "xlsx",
+        "name": "Excel-Arbeitsmappe",
+        "description": "Excel-Arbeitsmappe",
+        "role": "Editor"
+      },
+      {
+        "ext": "pptx",
+        "name": "PowerPoint-Präsentation",
+        "description": "PowerPoint-Präsentation",
+        "role": "Editor"
+      },
+      {
+        "ext": "csv",
+        "name": "CSV-Datei",
+        "description": "CSV-Datei",
+        "role": "Editor"
+      }
     ],
     "win": {
-      "icon": "build/icon.png",
-      "target": ["nsis", "portable"]
+      "icon": "build/icon.ico",
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "signAndEditExecutable": false
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "REX Office"
+      "shortcutName": "REX Office",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "artifactName": "REX-Office-Setup-${version}.exe",
+      "language": "1031",
+      "installerLanguages": [
+        "de_DE"
+      ]
     },
     "portable": {
       "artifactName": "REX-Office-Portable-${version}.exe"
-    }
+    },
+    "afterPack": "build/after-pack.js",
+    "publish": null
   }
 }

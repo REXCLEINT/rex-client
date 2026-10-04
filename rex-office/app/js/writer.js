@@ -119,7 +119,74 @@
   function exec(cmd, val = null) {
     restoreRange();
     document.execCommand(cmd, false, val);
+    normalizeBlocks();
     saveRange();
+    afterChange();
+  }
+
+  // Chrome erzeugt bei Listen/Einfuegen manchmal ungueltige Verschachtelungen (<p><ul>…</ul></p>, <ul><ul>)
+  const BLOCK_TAGS = /^(UL|OL|TABLE|P|DIV|H[1-6]|BLOCKQUOTE|PRE|HR)$/;
+  function normalizeBlocks() {
+    for (const p of $$('p,h1,h2,h3,h4,h5,h6,blockquote', editor)) {
+      if (!Array.from(p.children).some(ch => BLOCK_TAGS.test(ch.tagName))) continue;
+      const frag = document.createDocumentFragment();
+      let cur = null;
+      for (const ch of Array.from(p.childNodes)) {
+        if (ch.nodeType === 1 && BLOCK_TAGS.test(ch.tagName)) { cur = null; frag.appendChild(ch); }
+        else {
+          if (ch.nodeType === 3 && !ch.nodeValue.trim() && !cur) continue;
+          if (!cur) { cur = p.cloneNode(false); frag.appendChild(cur); }
+          cur.appendChild(ch);
+        }
+      }
+      p.replaceWith(frag);
+    }
+    for (const l of $$('ul > ul, ul > ol, ol > ul, ol > ol', editor)) {
+      const prev = l.previousElementSibling;
+      if (prev && prev.tagName === 'LI') prev.appendChild(l);
+      else { const li = document.createElement('li'); li.style.listStyleType = 'none'; l.replaceWith(li); li.appendChild(l); }
+    }
+    for (const t of $$('table', editor)) if (!t.rows.length) t.remove();
+    for (const inner of $$('li > li', editor)) inner.parentElement.after(inner);
+  }
+  function placeCaret(node, atEnd = false) {
+    const r = document.createRange();
+    r.selectNodeContents(node);
+    r.collapse(!atEnd);
+    const sel = getSelection();
+    sel.removeAllRanges();
+    sel.addRange(r);
+    savedRange = r.cloneRange();
+  }
+  // Blockelemente (Tabelle, Seitenumbruch, Linie …) hinter dem aktuellen Absatz einfuegen
+  function insertBlockHTML(html) {
+    restoreRange();
+    const sel = getSelection();
+    let n = sel.rangeCount ? sel.getRangeAt(0).startContainer : editor;
+    if (n.nodeType === 3) n = n.parentElement;
+    if (!editor.contains(n)) n = editor;
+    const cell = n.closest('td,th');
+    if (cell && editor.contains(cell) && !/^<table/i.test(html.trim())) { exec('insertHTML', html); return; }
+    let top = n;
+    while (top !== editor && top.parentElement !== editor && !(top.parentElement && /^(TD|TH)$/.test(top.parentElement.tagName))) top = top.parentElement;
+    const tpl = document.createElement('template');
+    tpl.innerHTML = html.trim();
+    const nodes = Array.from(tpl.content.childNodes);
+    if (top === editor) editor.append(...nodes);
+    else {
+      const empty = top.tagName === 'P' && !top.textContent.trim() && !top.querySelector('img,table');
+      if (empty) top.replaceWith(...nodes); else top.after(...nodes);
+    }
+    let last = nodes[nodes.length - 1];
+    if (!last.nextElementSibling || last.nextElementSibling.tagName !== 'P') {
+      const np = document.createElement('p');
+      np.innerHTML = '<br>';
+      last.after(np);
+      last = np;
+    } else last = last.nextElementSibling;
+    const firstCell = nodes.find(x => x.nodeType === 1 && x.tagName === 'TABLE');
+    if (firstCell) placeCaret(firstCell.querySelector('td,th'));
+    else placeCaret(last);
     afterChange();
   }
   const BLOCK_SEL = 'p,h1,h2,h3,h4,h5,h6,blockquote,pre,li,div:not(.page-break):not(.toc),td,th';
@@ -210,11 +277,78 @@
   }
 
   // ---------------------------------------------------------------
+  // Listen (eigene Logik – Chromes indent/outdent erzeugt ungueltiges HTML)
+  // ---------------------------------------------------------------
+  function indentLi(li) {
+    const prev = li.previousElementSibling;
+    if (!prev || prev.tagName !== 'LI') return false;
+    let sub = prev.lastElementChild && /^(UL|OL)$/.test(prev.lastElementChild.tagName) ? prev.lastElementChild : null;
+    if (!sub) { sub = document.createElement(li.parentElement.tagName.toLowerCase()); prev.appendChild(sub); }
+    sub.appendChild(li);
+    // eigene Unterliste mit der neuen Ebene zusammenfuehren
+    const own = li.lastElementChild;
+    if (own && /^(UL|OL)$/.test(own.tagName) && li.nextElementSibling == null) { while (own.firstChild) sub.appendChild(own.firstChild); own.remove(); }
+    return true;
+  }
+  function outdentLi(li) {
+    const list = li.parentElement;
+    const parentLi = list.parentElement && list.parentElement.tagName === 'LI' ? list.parentElement : null;
+    const following = [];
+    for (let n = li.nextElementSibling; n; n = n.nextElementSibling) following.push(n);
+    if (following.length) {
+      const sub = document.createElement(list.tagName.toLowerCase());
+      following.forEach(f => sub.appendChild(f));
+      li.appendChild(sub);
+    }
+    let result = li;
+    if (parentLi) parentLi.after(li);
+    else {
+      const p = document.createElement('p');
+      const nested = [];
+      for (const ch of Array.from(li.childNodes)) {
+        if (ch.nodeType === 1 && /^(UL|OL)$/.test(ch.tagName)) nested.push(ch); else p.appendChild(ch);
+      }
+      if (!p.textContent.trim() && !p.querySelector('img')) p.innerHTML = '<br>';
+      if (li.style.textAlign) p.style.textAlign = li.style.textAlign;
+      list.after(p);
+      let after = p;
+      for (const nl of nested) { after.after(nl); after = nl; }
+      li.remove();
+      result = p;
+    }
+    if (!list.children.length) list.remove();
+    return result;
+  }
+  function listIndent(dir) {
+    const el = currentElement();
+    const li = el && el.closest('li');
+    if (!li) return false;
+    // Cursor ueber Knoten merken (bleiben beim Verschieben erhalten; Zeichen-Offsets versagen bei leeren Punkten)
+    const sel = getSelection();
+    const r0 = sel.rangeCount ? sel.getRangeAt(0) : null;
+    const mark = r0 ? { sc: r0.startContainer, so: r0.startOffset, ec: r0.endContainer, eo: r0.endOffset } : null;
+    const lis = selectedBlocks().map(b => b.closest('li')).filter((x, i, a) => x && a.indexOf(x) === i);
+    let last = null;
+    for (const item of (dir > 0 ? lis : lis.reverse())) last = dir > 0 ? (indentLi(item), item) : outdentLi(item);
+    if (!lis.length) last = dir > 0 ? (indentLi(li), li) : outdentLi(li);
+    if (mark && editor.contains(mark.sc) && editor.contains(mark.ec)) {
+      const r = document.createRange();
+      r.setStart(mark.sc, Math.min(mark.so, mark.sc.nodeType === 3 ? mark.sc.length : mark.sc.childNodes.length));
+      r.setEnd(mark.ec, Math.min(mark.eo, mark.ec.nodeType === 3 ? mark.ec.length : mark.ec.childNodes.length));
+      sel.removeAllRanges();
+      sel.addRange(r);
+    } else if (last) placeCaret(last);
+    saveRange();
+    afterChange();
+    return true;
+  }
+
+  // ---------------------------------------------------------------
   // Einzug
   // ---------------------------------------------------------------
   function indent(dir) {
     const el = currentElement();
-    if (el && el.closest('li')) { exec(dir > 0 ? 'indent' : 'outdent'); return; }
+    if (el && el.closest('li')) { listIndent(dir); return; }
     for (const b of selectedBlocks()) {
       if (/^(TD|TH)$/.test(b.tagName)) continue;
       const cur = parseFloat(b.style.marginLeft) || 0;
@@ -234,7 +368,7 @@
   }
   function insertTable(rows, cols) {
     const row = '<tr>' + '<td><br></td>'.repeat(cols) + '</tr>';
-    exec('insertHTML', `<table><tbody>${row.repeat(rows)}</tbody></table><p><br></p>`);
+    insertBlockHTML(`<table><tbody>${row.repeat(rows)}</tbody></table>`);
   }
   function tableOp(op) {
     const cell = currentCell();
@@ -639,9 +773,9 @@
     find: () => openFind(false),
     replace: () => openFind(true),
     selectAll: () => { editor.focus(); document.execCommand('selectAll'); saveRange(); },
-    pageBreak: () => exec('insertHTML', '<div class="page-break" contenteditable="false"></div><p><br></p>'),
+    pageBreak: () => insertBlockHTML('<div class="page-break" contenteditable="false"></div>'),
     image: async () => { saveRange(); insertImage(await Rex.util.readImageFile()); },
-    hr: () => exec('insertHTML', '<hr><p><br></p>'),
+    hr: () => insertBlockHTML('<hr>'),
     link: async () => {
       saveRange();
       const text = savedRange ? savedRange.toString() : '';
@@ -672,7 +806,7 @@
       });
       const old = $('.toc', editor);
       const html = `<div class="toc"><p><b>Inhaltsverzeichnis</b></p>${lines.join('')}</div>`;
-      if (old) { old.outerHTML = html; afterChange(); } else exec('insertHTML', html + '<p><br></p>');
+      if (old) { old.outerHTML = html; afterChange(); } else insertBlockHTML(html);
     },
     pageNumbers: () => { settings.pageNumbers = !settings.pageNumbers; applySettings(); Rex.setDirty(true); },
     date: () => exec('insertText', new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })),
@@ -896,6 +1030,7 @@
   // ---------------------------------------------------------------
   editor.addEventListener('input', () => {
     fixFontSizes();
+    normalizeBlocks();
     // Leeren Editor immer mit Absatz fuellen
     if (!editor.firstElementChild && !editor.textContent) editor.innerHTML = '<p><br></p>';
     scheduleHistory();
@@ -959,11 +1094,22 @@
         if (i >= 0) moveToCell(cells[i]);
         return;
       }
-      if (currentElement() && currentElement().closest('li')) { exec(e.shiftKey ? 'outdent' : 'indent'); return; }
+      if (currentElement() && currentElement().closest('li')) { listIndent(e.shiftKey ? -1 : 1); return; }
       exec('insertText', ' ');
       return;
     }
     if (e.key === 'Escape' && document.body.classList.contains('focus-mode')) document.body.classList.remove('focus-mode');
+    // Enter auf leerem Listenpunkt: Ebene hoch bzw. Liste beenden (wie Word)
+    if (e.key === 'Enter' && !e.shiftKey) {
+      const li = currentElement() && currentElement().closest('li');
+      if (li && !Array.from(li.childNodes).some(n => (n.nodeType === 3 && n.nodeValue.trim()) || (n.nodeType === 1 && !/^(BR|UL|OL)$/.test(n.tagName) && (n.textContent.trim() || n.querySelector('img'))))) {
+        e.preventDefault();
+        const res = outdentLi(li);
+        placeCaret(res.tagName === 'LI' ? res : res);
+        afterChange();
+        return;
+      }
+    }
     // Bei Enter neuen Absatz statt <div>
     if (e.key === 'Enter' && !e.shiftKey) setTimeout(() => {
       const el = currentElement();

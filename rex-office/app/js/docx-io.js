@@ -212,7 +212,12 @@
       const inst = ordered ? ++olInstance : 0;
       const ref = ordered ? 'rex-numbers' : 'rex-bullets';
       for (const li of list.children) {
+        if (li.tagName === 'UL' || li.tagName === 'OL') { out.push(...listToDocx(li, level + 1)); continue; }
         if (li.tagName !== 'LI') { out.push(...blockToDocx(li, level)); continue; }
+        if (li.style.listStyleType === 'none' && li.children.length === 1 && /^(UL|OL)$/.test(li.firstElementChild.tagName)) {
+          out.push(...listToDocx(li.firstElementChild, level + 1));
+          continue;
+        }
         let runs = [];
         let first = true;
         const emit = (opts = {}) => {

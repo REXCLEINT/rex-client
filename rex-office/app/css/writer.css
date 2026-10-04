@@ -42,6 +42,7 @@
 .editor pre, .editor .code { font-family: Consolas, "Courier New", monospace; font-size: 10pt; background: #f4f4f4; padding: 6pt 8pt; margin: 0 0 8pt; white-space: pre-wrap; }
 .editor ul, .editor ol { margin: 0 0 8pt; padding-left: 36px; }
 .editor li { margin: 0; }
+.editor li > ul, .editor li > ol { margin: 0; }
 .editor li > p { margin: 0; }
 .editor a { color: #0563c1; text-decoration: underline; }
 .editor img { max-width: 100%; vertical-align: bottom; cursor: default; }
