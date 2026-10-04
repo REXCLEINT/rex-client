@@ -44,16 +44,52 @@
   .empty { padding: 26px; text-align: center; color: var(--text-2); }
   .drop-hint { margin-top: 18px; text-align: center; color: var(--text-2); font-size: 12px; }
   body.dragging .wrap { outline: 3px dashed var(--accent); outline-offset: 8px; border-radius: 12px; }
-  @media (max-width: 760px) { .apps { grid-template-columns: 1fr; } }
+
+  .home-top .tools .profile-btn { width: auto; padding: 3px 12px 3px 3px; border-radius: 22px; gap: 8px; display: flex; align-items: center; font-weight: 600; }
+  .home-top .greet-row { display: flex; align-items: center; gap: 16px; }
+  .home-top .greet-avatar { flex: none; border-radius: 50%; box-shadow: 0 0 0 3px rgba(255,255,255,.35); }
+  /* Einrichtungs-Assistent */
+  .setup { position: fixed; inset: 0; z-index: 4000; background: linear-gradient(135deg, #5b3fd1 0%, #2b579a 55%, #217346 100%); display: grid; place-items: center; padding: 20px; }
+  .setup[hidden] { display: none; }
+  .setup .card { background: var(--panel); color: var(--text); width: min(560px, 100%); border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,.35); padding: 34px 38px 26px; }
+  .setup .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; color: #5b3fd1; margin-bottom: 18px; }
+  .setup .logo b { width: 32px; height: 32px; border-radius: 8px; background: #5b3fd1; color: #fff; display: grid; place-items: center; }
+  .setup h2 { margin: 0 0 6px; font-size: 26px; font-weight: 600; }
+  .setup p.sub { margin: 0 0 22px; color: var(--text-2); font-size: 14px; }
+  .setup .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .setup .choice { border: 2px solid var(--border); border-radius: 12px; padding: 16px; cursor: pointer; background: var(--panel); text-align: left; color: var(--text); display: flex; gap: 12px; align-items: center; font-size: 15px; }
+  .setup .choice:hover { border-color: #8f7be6; }
+  .setup .choice.on { border-color: #5b3fd1; box-shadow: 0 0 0 3px rgba(91,63,209,.18); }
+  .setup .choice .badge { width: 38px; height: 38px; border-radius: 9px; display: grid; place-items: center; font-weight: 800; color: #fff; flex: none; }
+  .setup .choice small { display: block; color: var(--text-2); font-size: 12px; }
+  .setup input.name { width: 100%; font-size: 18px; padding: 12px 14px; border: 2px solid var(--border); border-radius: 10px; background: var(--panel-2); }
+  .setup input.name:focus { outline: none; border-color: #5b3fd1; }
+  .setup .pic { display: flex; gap: 22px; align-items: center; }
+  .setup .pic-preview { width: 110px; height: 110px; flex: none; }
+  .setup .pic-actions { display: flex; flex-direction: column; gap: 10px; }
+  .setup .colors { display: flex; gap: 7px; flex-wrap: wrap; }
+  .setup .colors button { width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; }
+  .setup .colors button.on { border-color: var(--text); }
+  .setup .sbtn { padding: 9px 18px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel); cursor: pointer; font-size: 14px; color: var(--text); }
+  .setup .sbtn.primary { background: #5b3fd1; border-color: #5b3fd1; color: #fff; font-weight: 600; }
+  .setup .sbtn:disabled { opacity: .45; cursor: default; }
+  .setup .foot { display: flex; align-items: center; justify-content: space-between; margin-top: 28px; }
+  .setup .dots { display: flex; gap: 7px; }
+  .setup .dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--border); }
+  .setup .dots i.on { background: #5b3fd1; width: 22px; border-radius: 4px; }
+  .setup .step { animation: stepin .25s ease; }
+  @keyframes stepin { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+  @media (max-width: 760px) { .apps { grid-template-columns: 1fr; } .setup .choices { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body class="app-home">
   <div class="home-top">
     <div class="logo"><b>R</b> REX Office</div>
-    <h1 id="greet">Willkommen</h1>
+    <div class="greet-row"><span id="greetAvatar" class="greet-avatar"></span><h1 id="greet">Willkommen</h1></div>
     <p>Texte, Tabellen und Präsentationen – kompatibel mit Word, Excel und PowerPoint.</p>
     <div class="tools">
       <button id="themeBtn" title="Hell/Dunkel"><i data-lucide="moon"></i></button>
+      <button id="profileBtn" class="profile-btn" title="Profil &amp; Einstellungen"></button>
     </div>
   </div>
   <div class="wrap">
@@ -86,7 +122,22 @@
     </div>
   </div>
 
+  <div class="setup" id="setup" hidden>
+    <div class="card">
+      <div class="logo"><b>R</b> REX Office</div>
+      <div id="setupBody"></div>
+      <div class="foot">
+        <div class="dots" id="setupDots"></div>
+        <div style="display:flex;gap:8px">
+          <button class="sbtn" id="setupBack"></button>
+          <button class="sbtn primary" id="setupNext"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 <script src="vendor/lucide.min.js"></script>
+<script src="js/i18n.js"></script>
 <script src="js/common.js"></script>
 <script src="js/home.js"></script>
 </body>

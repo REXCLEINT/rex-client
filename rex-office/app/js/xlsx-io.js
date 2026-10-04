@@ -278,7 +278,7 @@
     const ExcelJS = window.ExcelJS;
     const R = RF();
     const wbx = new ExcelJS.Workbook();
-    wbx.creator = 'REX Office';
+    wbx.creator = (Rex.settings && Rex.settings.get().name) || 'REX Office';
     wbx.created = new Date();
     wbx.views = [{ activeTab: model.active || 0, firstSheet: 0, visibility: 'visible' }];
     const used = new Set();

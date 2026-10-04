@@ -14,10 +14,21 @@ Dateien, die du mit REX Office speicherst, lassen sich in Word, Excel, PowerPoin
 
 Lade eine dieser Dateien herunter:
 
-- **`REX-Office-Setup-1.0.0.exe`** – Installer: legt eine Verknüpfung auf dem Desktop und im Startmenü an und meldet sich für `.docx`, `.xlsx`, `.pptx` und `.csv` an („Öffnen mit → REX Office“).
-- **`REX-Office-Portable-1.0.0.exe`** – ohne Installation, einfach starten (z. B. vom USB-Stick).
+- **`REX-Office-Setup-1.1.0.exe`** – Installer: legt eine Verknüpfung auf dem Desktop und im Startmenü an und meldet sich für `.docx`, `.xlsx`, `.pptx` und `.csv` an („Öffnen mit → REX Office“).
+- **`REX-Office-Portable-1.1.0.exe`** – ohne Installation, einfach starten (z. B. vom USB-Stick).
 
 Windows zeigt beim ersten Start eventuell „Der Computer wurde durch Windows geschützt“ an, weil die Datei nicht digital signiert ist. Dann auf **Weitere Informationen → Trotzdem ausführen** klicken.
+
+## Ersteinrichtung
+
+Der Installer fragt zuerst nach der Sprache (Deutsch/English). Beim ersten Start von REX Office führt ein Assistent durch:
+
+1. **Sprache** – Deutsch oder English (die ganze Oberfläche wird umgestellt)
+2. **Name** – erscheint in der Begrüßung („Guten Morgen, Logan!“) und als Autor in deinen Dateien
+3. **Profilbild** – eigenes Bild auswählen oder eine Farbe für deine Initialen
+4. **Design** – hell oder dunkel
+
+Alles lässt sich später über dein Profilbild oben rechts auf der Startseite ändern.
 
 ## Was die Programme können
 

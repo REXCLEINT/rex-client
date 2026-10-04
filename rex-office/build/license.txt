@@ -1,0 +1,17 @@
+﻿REX Office 1.1
+
+Deutsch:
+Willkommen bei REX Office – Textverarbeitung, Tabellenkalkulation und
+Präsentationen in einem Programm. REX Office öffnet und speichert Word-
+(.docx), Excel- (.xlsx) und PowerPoint-Dateien (.pptx).
+Beim ersten Start kannst du deine Sprache, deinen Namen und dein
+Profilbild einrichten.
+REX Office ist kostenlos und wird ohne Gewähr bereitgestellt (MIT-Lizenz).
+
+English:
+Welcome to REX Office – word processor, spreadsheets and presentations in
+one program. REX Office opens and saves Word (.docx), Excel (.xlsx) and
+PowerPoint (.pptx) files.
+On first start you can set up your language, your name and your profile
+picture.
+REX Office is free and provided "as is" without warranty (MIT license).

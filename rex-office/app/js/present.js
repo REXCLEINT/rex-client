@@ -34,7 +34,8 @@
     titleOnly: { name: 'Nur Titel', els: [{ ph: 'title', x: 66, y: 29, w: 828, h: 105, size: 40, va: 'middle' }] },
     blank: { name: 'Leer', els: [] }
   };
-  const PH_TEXT = { title: 'Titel hinzufügen', subtitle: 'Untertitel hinzufügen', body: 'Text hinzufügen' };
+  const _t = window.RexI18n ? RexI18n.t : (x) => x;
+  const PH_TEXT = { title: _t('Titel hinzufügen'), subtitle: _t('Untertitel hinzufügen'), body: _t('Text hinzufügen') };
   const FONTS = ['Calibri', 'Calibri Light', 'Aptos', 'Arial', 'Arial Black', 'Cambria', 'Century Gothic', 'Comic Sans MS', 'Consolas', 'Georgia', 'Impact',
     'Segoe UI', 'Segoe UI Light', 'Segoe UI Semibold', 'Tahoma', 'Times New Roman', 'Trebuchet MS', 'Verdana'];
   const SIZES = [8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 40, 44, 48, 54, 60, 66, 72, 80, 96];

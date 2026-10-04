@@ -477,6 +477,7 @@
         </div>
         <div class="doc-title"><input id="docName" spellcheck="false" title="Dokumentname"><span id="dirtyMark" class="dirty"></span></div>
         <div class="right">
+          <button title="Startseite" data-qa="home" class="tb-avatar">${avatarHTML(null, 24)}</button>
           <button title="Startseite" data-qa="home"><i data-lucide="house"></i></button>
           <button title="Hell/Dunkel" id="themeBtn"><i data-lucide="moon"></i></button>
         </div>`;
@@ -555,6 +556,9 @@
   // ---------- Initialisierung ----------
   async function init(c) {
     cfg = c;
+    const tr = window.RexI18n ? RexI18n.t : (x) => x;
+    c.defaultName = tr(c.defaultName);
+    (c.templates || []).forEach(tp => { if (tp.docName) tp.docName = tr(tp.docName); });
     document.body.classList.add('app-' + c.app);
     doc.name = c.defaultName;
     buildChrome();
@@ -586,8 +590,29 @@
     }
   }
 
+  // ---------- Einstellungen (Name, Sprache, Profilbild) ----------
+  const settingsApi = {
+    get() {
+      try { if (native && native.getSettings) return native.getSettings() || {}; } catch { /* */ }
+      try { return JSON.parse(localStorage.getItem('rex.settings') || '{}'); } catch { return {}; }
+    },
+    async set(obj) {
+      if (native && native.setSettings) return native.setSettings(obj);
+      const merged = { ...settingsApi.get(), ...obj };
+      try { localStorage.setItem('rex.settings', JSON.stringify(merged)); } catch { /* */ }
+      return merged;
+    }
+  };
+  function avatarHTML(st, size = 28) {
+    st = st || settingsApi.get();
+    if (st.avatar) return `<img src="${st.avatar}" alt="" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;display:block">`;
+    const ini = (st.name || '?').trim().split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?';
+    return `<span style="width:${size}px;height:${size}px;border-radius:50%;background:${st.avatarColor || '#5b3fd1'};color:#fff;display:grid;place-items:center;font-weight:700;font-size:${Math.round(size * 0.4)}px">${esc(ini)}</span>`;
+  }
+
   window.Rex = {
     init, native, doc, setDirty, setDoc, save, openFile, loadFile, exportPDF, printDoc, selectTab,
+    settings: settingsApi, avatarHTML,
     dialog, confirm: confirmBox, alert: alertBox, toast, menu, closeMenu, colorMenu, icons, PALETTE,
     util: { $, $$, ext, stripExt, esc, toBytes, blobToBytes, bytesToDataURL, dataURLToBytes, mimeFromDataURL,
       readImageFile, imageSize, normalizeImage, store, filePath }

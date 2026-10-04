@@ -22,6 +22,18 @@ function addRecent(filePath) {
   if (process.platform === 'win32') app.addRecentDocument(filePath);
 }
 
+// ---------- Einstellungen (Name, Sprache, Profilbild) ----------
+function settingsFile() { return path.join(app.getPath('userData'), 'settings.json'); }
+function readSettings() {
+  try { return JSON.parse(fs.readFileSync(settingsFile(), 'utf8')); } catch { return {}; }
+}
+function writeSettings(obj) {
+  const merged = { ...readSettings(), ...obj };
+  fs.writeFileSync(settingsFile(), JSON.stringify(merged));
+  for (const w of BrowserWindow.getAllWindows()) w.webContents.send('settings:changed', merged);
+  return merged;
+}
+
 function pageForFile(filePath) {
   const ext = path.extname(filePath || '').slice(1).toLowerCase();
   return EXT_TO_PAGE[ext] || null;
@@ -188,6 +200,8 @@ ipcMain.handle('app:open-path', (_e, filePath) => {
   const page = pageForFile(filePath);
   if (page) createWindow(page, filePath);
 });
+ipcMain.on('settings:get-sync', (e) => { e.returnValue = readSettings(); });
+ipcMain.handle('settings:set', (_e, obj) => writeSettings(obj));
 ipcMain.on('app:dirty', (e, dirty) => {
   const st = windowState.get(e.sender.id);
   if (st) st.dirty = !!dirty;

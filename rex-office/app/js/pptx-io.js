@@ -16,7 +16,7 @@
   // =====================================================================
   async function exportPptx(pres, helpers) {
     const pptx = new PptxGenJS();
-    pptx.author = 'REX Office';
+    pptx.author = (Rex.settings && Rex.settings.get().name) || 'REX Office';
     pptx.company = 'REX';
     pptx.title = helpers.title || 'Präsentation';
     pptx.defineLayout({ name: 'REX', width: pres.w / PX_PER_IN, height: pres.h / PX_PER_IN });

@@ -1,7 +1,15 @@
 // Sichere Bruecke zwischen Oberflaeche und Dateisystem
 const { contextBridge, ipcRenderer, webUtils } = require('electron');
 
+let settings = {};
+try { settings = ipcRenderer.sendSync('settings:get-sync') || {}; } catch { settings = {}; }
+const settingsListeners = [];
+ipcRenderer.on('settings:changed', (_e, s) => { settings = s; settingsListeners.forEach(cb => cb(s)); });
+
 contextBridge.exposeInMainWorld('rexNative', {
+  getSettings: () => settings,
+  setSettings: (obj) => ipcRenderer.invoke('settings:set', obj),
+  onSettingsChanged: (cb) => settingsListeners.push(cb),
   openFile: (filters) => ipcRenderer.invoke('file:open', { filters }),
   readFile: (p) => ipcRenderer.invoke('file:read', p),
   chooseSave: (opts) => ipcRenderer.invoke('file:choose-save', opts),

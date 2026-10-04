@@ -310,7 +310,8 @@
     } : undefined;
 
     const document_ = new D.Document({
-      creator: 'REX Office',
+      creator: (Rex.settings && Rex.settings.get().name) || 'REX Office',
+      lastModifiedBy: (Rex.settings && Rex.settings.get().name) || 'REX Office',
       title: meta.title || '',
       description: 'Erstellt mit REX Office',
       styles: {
