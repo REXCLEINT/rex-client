@@ -826,6 +826,12 @@
         <tr><td style="padding:4px 0">Zeichen (mit Leerzeichen)</td><td style="text-align:right">${text.replace(/\n/g, '').length.toLocaleString('de-DE')}</td></tr>
         <tr><td style="padding:4px 0">Absätze</td><td style="text-align:right">${paras}</td></tr></table>` });
     },
+    autocorrect: () => {
+      autoCorrectOn = !autoCorrectOn;
+      Rex.util.store('autocorrect', autoCorrectOn ? '1' : '0');
+      $('#autocorrectBtn').classList.toggle('on', autoCorrectOn);
+      Rex.toast(autoCorrectOn ? 'AutoKorrektur an' : 'AutoKorrektur aus');
+    },
     spell: () => {
       editor.spellcheck = !editor.spellcheck;
       $('#spellBtn').classList.toggle('on', editor.spellcheck);
@@ -1028,6 +1034,76 @@
   // ---------------------------------------------------------------
   // Editor-Ereignisse
   // ---------------------------------------------------------------
+  // ---------------------------------------------------------------
+  // AutoKorrektur (wie in Word)
+  // ---------------------------------------------------------------
+  const AUTOCORRECT = { '(c)': '©', '(r)': '®', '(tm)': '™', '->': '→', '<-': '←', '=>': '⇒', '...': '…', ' - ': ' – ' };
+  let autoCorrectOn = (Rex.util.store('autocorrect') ?? '1') === '1';
+  function autoCorrect(endOffsetFromTrigger) {
+    if (!autoCorrectOn) return;
+    const sel = getSelection();
+    if (!sel.rangeCount || !sel.isCollapsed) return;
+    const node = sel.anchorNode;
+    if (!node || node.nodeType !== 3 || !editor.contains(node)) return;
+    if (node.parentElement.closest('pre, code, a')) return;
+    const caret = sel.anchorOffset;
+    let text = node.nodeValue;
+    const end = caret - endOffsetFromTrigger;
+    if (end < 0) return;
+    let start = end;
+    while (start > 0 && /[\p{L}\p{N}]/u.test(text[start - 1])) start--;
+    let word = text.slice(start, end);
+    let changed = false;
+    // 1) Versehentlich gedrueckte Feststelltaste: "tEST" -> "Test"
+    if (/^\p{Ll}\p{Lu}{2,}$/u.test(word)) {
+      word = word[0].toUpperCase() + word.slice(1).toLowerCase();
+      changed = true;
+    }
+    // 2) Zwei Grossbuchstaben am Wortanfang: "HAllo" -> "Hallo"
+    else if (/^\p{Lu}{2}\p{Ll}{2,}$/u.test(word)) {
+      word = word[0] + word[1].toLowerCase() + word.slice(2);
+      changed = true;
+    }
+    // 3) Jeden Satz mit einem Grossbuchstaben beginnen
+    if (word && /^\p{Ll}/u.test(word) && !/\d/.test(word)) {
+      const block = node.parentElement.closest('p,h1,h2,h3,h4,h5,h6,li,td,th,blockquote,div') || editor;
+      const r = document.createRange();
+      r.setStart(block, 0);
+      r.setEnd(node, start);
+      const before = r.toString().replace(/\u00a0/g, ' ');
+      if (!before.trim() || /[.!?]\s+$/.test(before) && !/(\bz\.\s?B|\bu\.\s?a|\bbzw|\bca|\bvgl|\busw|\bd\.\s?h|\bNr|\bS)\.\s+$/i.test(before)) {
+        word = word[0].toUpperCase() + word.slice(1);
+        changed = true;
+      }
+    }
+    if (changed) {
+      node.nodeValue = text.slice(0, start) + word + text.slice(end);
+      text = node.nodeValue;
+    }
+    // 4) Ersetzungen: (c) -> ©, -> -> →, ... -> …
+    let delta = 0;
+    for (const [k, v] of Object.entries(AUTOCORRECT)) {
+      const upto = text.slice(0, caret - (k === ' - ' ? 0 : endOffsetFromTrigger));
+      if (upto.endsWith(k)) {
+        const pos = upto.length - k.length;
+        node.nodeValue = text.slice(0, pos) + v + text.slice(pos + k.length);
+        delta = v.length - k.length;
+        changed = true;
+        break;
+      }
+    }
+    if (changed) {
+      const r = document.createRange();
+      r.setStart(node, Math.max(0, Math.min(node.nodeValue.length, caret + delta)));
+      r.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(r);
+    }
+  }
+  editor.addEventListener('input', (e) => {
+    if (e.inputType === 'insertText' && e.data && /^[\s\u00a0.,!?;:)]$/.test(e.data)) autoCorrect(1);
+  });
+
   editor.addEventListener('input', () => {
     fixFontSizes();
     normalizeBlocks();
@@ -1099,6 +1175,7 @@
       return;
     }
     if (e.key === 'Escape' && document.body.classList.contains('focus-mode')) document.body.classList.remove('focus-mode');
+    if (e.key === 'Enter' || e.key === 'Tab') autoCorrect(0);
     // Enter auf leerem Listenpunkt: Ebene hoch bzw. Liste beenden (wie Word)
     if (e.key === 'Enter' && !e.shiftKey) {
       const li = currentElement() && currentElement().closest('li');
@@ -1283,6 +1360,7 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #000;padding:2p
   });
 
   setContent('<p><br></p>');
+  $('#autocorrectBtn').classList.toggle('on', autoCorrectOn);
   editor.focus();
   new ResizeObserver(schedulePageUpdate).observe(editor);
   window.RexWriter = { editor, setContent, save, load, get settings() { return settings; } };
