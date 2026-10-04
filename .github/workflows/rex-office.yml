@@ -1,6 +1,7 @@
-# Baut REX Office für Windows (Installer + portable .exe) und stellt die Dateien als Download bereit.
-# Läuft nur, wenn sich etwas im Ordner rex-office/ ändert, oder manuell über "Run workflow".
-# Es werden bewusst KEINE Releases erstellt, damit die Updates des REX Clients unberührt bleiben.
+# Baut REX Office für Windows (Installer + portable .exe).
+# Ist die Version in rex-office/package.json neu, wird automatisch ein Release "office-vX.Y.Z" erstellt.
+# Über dieses Release aktualisiert sich REX Office selbst (Datei > Info bzw. Hinweis auf der Startseite).
+# Wichtig: Office-Releases werden NIE als "latest" markiert – die Updates des REX Clients bleiben unberührt.
 name: REX Office (Windows)
 
 on:
@@ -9,6 +10,13 @@ on:
       - 'rex-office/**'
       - '.github/workflows/rex-office.yml'
   workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: rex-office-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-windows:
@@ -32,3 +40,23 @@ jobs:
             rex-office/dist/REX-Office-Setup-*.exe
             rex-office/dist/REX-Office-Portable-*.exe
           if-no-files-found: error
+
+      - name: Release für das Update-System erstellen (falls Version neu)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          TAG="office-v$VERSION"
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $TAG existiert bereits – nichts zu tun."
+            exit 0
+          fi
+          gh release create "$TAG" \
+            "dist/REX-Office-Setup-$VERSION.exe" \
+            "dist/REX-Office-Portable-$VERSION.exe" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "REX Office $VERSION" \
+            --notes "REX Office $VERSION für Windows. Installierte Versionen aktualisieren sich automatisch." \
+            --latest=false

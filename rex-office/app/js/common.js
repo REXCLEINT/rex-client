@@ -27,6 +27,71 @@
   function icons() { if (window.lucide) window.lucide.createIcons({ attrs: { 'stroke-width': 1.8 } }); }
 
   // ---------- Hilfsfunktionen ----------
+  // ---------- „Änderungen speichern?“ im REX-Design ----------
+  function askSaveDialog() {
+    return new Promise(resolve => {
+      const bg = document.createElement('div');
+      bg.className = 'modal-bg';
+      bg.innerHTML = `<div class="modal save-ask" role="dialog">
+        <div class="sa-head"><span class="sa-ico">${esc(cfg && cfg.letter || 'R')}</span>
+          <div><h3>Änderungen speichern?</h3><p>„${esc(doc.name || 'Unbenannt')}“ wurde geändert. Wenn du nicht speicherst, gehen deine Änderungen verloren.</p></div></div>
+        <div class="actions sa-actions">
+          <button data-r="discard">Nicht speichern</button>
+          <span style="flex:1"></span>
+          <button data-r="cancel">Abbrechen</button>
+          <button class="primary" data-r="save">Speichern</button>
+        </div></div>`;
+      document.body.appendChild(bg);
+      bg.querySelector('[data-r="save"]').focus();
+      const done = (r) => { bg.remove(); resolve(r); };
+      bg.addEventListener('click', e => { const b = e.target.closest('[data-r]'); if (b) done(b.dataset.r); else if (e.target === bg) done('cancel'); });
+      bg.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Escape') done('cancel'); });
+    });
+  }
+
+  // ---------- Automatische Updates ----------
+  const updates = {
+    async check() { return native && native.checkUpdate ? native.checkUpdate() : { error: 'Nur im Programm verfügbar' }; },
+    async install(info) {
+      const bg = document.createElement('div');
+      bg.className = 'modal-bg';
+      bg.innerHTML = `<div class="modal" style="min-width:420px"><h3>Update auf Version ${esc(info.version)}</h3>
+        <p style="margin:0 0 12px;color:var(--text-2)" id="updTxt">Wird heruntergeladen …</p>
+        <div class="upd-bar"><i id="updFill"></i></div></div>`;
+      document.body.appendChild(bg);
+      native.onUpdateProgress(({ done, total }) => {
+        const pct = total ? Math.round(done / total * 100) : 0;
+        const fill = bg.querySelector('#updFill');
+        if (fill) fill.style.width = pct + '%';
+        const txt = bg.querySelector('#updTxt');
+        if (txt) txt.textContent = total ? `Wird heruntergeladen … ${pct} % (${(done / 1048576).toFixed(1)} von ${(total / 1048576).toFixed(1)} MB)` : 'Wird heruntergeladen …';
+      });
+      try {
+        const r = await native.installUpdate();
+        if (r && r.opened) { bg.remove(); toast('Die Download-Seite wurde im Browser geöffnet.'); return; }
+        if (!r || !r.ok) throw new Error(r && r.reason || 'Update fehlgeschlagen');
+        bg.querySelector('#updTxt').textContent = 'Installiere … REX Office startet gleich neu.';
+      } catch (err) {
+        bg.remove();
+        alertBox('Update fehlgeschlagen', String(err.message || err));
+      }
+    },
+    async renderBox(box) {
+      box.innerHTML = `<p style="color:var(--text-2)">Version wird geprüft …</p>`;
+      const info = await updates.check();
+      const ver = info.current ? `Version ${esc(info.current)}` : '';
+      if (info.error) { box.innerHTML = `<p>${ver}</p><p style="color:var(--text-2)">Update-Prüfung nicht möglich: ${esc(info.error)}</p>`; return; }
+      if (info.available) {
+        box.innerHTML = `<p>${ver}</p><div class="upd-new"><b>Neue Version ${esc(info.version)} verfügbar!</b>
+          <button class="print-btn small" id="updGo"><i data-lucide="download"></i><span>Jetzt aktualisieren</span></button></div>`;
+        icons();
+        box.querySelector('#updGo').onclick = () => updates.install(info);
+      } else {
+        box.innerHTML = `<p>${ver} – <span style="color:#217346">Du hast die neueste Version.</span></p>`;
+      }
+    }
+  };
+
   function filePath(f) { return native && native.pathForFile ? native.pathForFile(f) : (f.path || null); }
   function ext(name) { const m = /\.([^.]+)$/.exec(name || ''); return m ? m[1].toLowerCase() : ''; }
   function stripExt(name) { return (name || '').replace(/\.[^.]+$/, ''); }
@@ -97,9 +162,9 @@
     let el = $('.toast');
     if (!el) { el = document.createElement('div'); el.className = 'toast'; document.body.appendChild(el); }
     el.textContent = msg;
-    el.classList.add('show');
+    el.classList.add('visible');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => el.classList.remove('show'), ms);
+    toastTimer = setTimeout(() => el.classList.remove('visible'), ms);
   }
 
   // ---------- Dialoge (prompt() gibt es in Electron nicht) ----------
@@ -389,14 +454,141 @@
   }
 
   async function printDoc() {
-    closeBackstage();
-    const opts = cfg.pdf || {};
-    if (opts.before) await opts.before();
-    try {
-      if (native) await native.print(); else window.print();
-    } finally {
-      if (opts.after) setTimeout(opts.after, 500);
+    if (!native || !native.printRun) {
+      closeBackstage();
+      const opts = cfg.pdf || {};
+      if (opts.before) await opts.before();
+      try { window.print(); } finally { if (opts.after) setTimeout(opts.after, 500); }
+      return;
     }
+    openBackstage('print');
+  }
+
+  // ---------- Druckansicht (wie in Word: Vorschau + Einstellungen) ----------
+  let printActive = false, printState = null, printUrl = null, previewSeq = 0;
+  const callOpt = (v) => typeof v === 'function' ? v() : v;
+  function printJob() {
+    const opts = cfg.pdf || {};
+    let pageSize = callOpt(opts.pageSize) || 'A4';
+    let landscape = !!callOpt(opts.landscape);
+    const margins = opts.margins ? opts.margins() : undefined;
+    const want = printState.orient;
+    if (typeof pageSize === 'object') {
+      const isLand = pageSize.width > pageSize.height;
+      if ((want === 'landscape') !== isLand) pageSize = { width: pageSize.height, height: pageSize.width };
+      landscape = false;
+    } else landscape = want === 'landscape';
+    return { pageSize, landscape, margins };
+  }
+  function docIsLandscape() {
+    const opts = cfg.pdf || {};
+    const ps = callOpt(opts.pageSize);
+    return typeof ps === 'object' ? ps.width > ps.height : !!callOpt(opts.landscape);
+  }
+  function parseRanges(str) {
+    const out = [];
+    for (const part of String(str || '').split(/[,;]/)) {
+      const m = /^\s*(\d+)\s*(?:-\s*(\d+))?\s*$/.exec(part);
+      if (!m) { if (part.trim()) return null; continue; }
+      const a = +m[1], b = m[2] ? +m[2] : a;
+      if (a < 1 || b < a) return null;
+      out.push({ from: a - 1, to: b - 1 });
+    }
+    return out;
+  }
+  async function refreshPreview() {
+    const seq = ++previewSeq;
+    const frame = $('#prFrame');
+    if (!frame) return;
+    $('#prInfo').textContent = 'Vorschau wird erstellt …';
+    try {
+      const bytes = toBytes(await native.printPreview(printJob()));
+      if (seq !== previewSeq) return;
+      let latin = '';
+      for (let i = 0; i < bytes.length; i += 0x8000) latin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+      const pages = (latin.match(/\/Type\s*\/Page(?!s)/g) || []).length || 1;
+      if (printUrl) URL.revokeObjectURL(printUrl);
+      printUrl = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+      frame.src = printUrl + '#toolbar=0&navpanes=0&view=FitH';
+      printState.pageCount = pages;
+      $('#prInfo').textContent = pages === 1 ? '1 Seite' : `${pages} Seiten`;
+    } catch (err) {
+      $('#prInfo').textContent = 'Vorschau nicht möglich: ' + (err.message || err);
+    }
+  }
+  async function renderPrint(sec) {
+    const opts = cfg.pdf || {};
+    if (!printActive) { printActive = true; if (opts.before) await opts.before(); }
+    const printers = await native.printers();
+    const def = printers.find(p => p.isDefault) || printers[0];
+    if (!printState) printState = { device: def ? def.name : '', copies: 1, range: 'all', pages: '', color: true, duplex: false };
+    printState.orient = printState.orient || (docIsLandscape() ? 'landscape' : 'portrait');
+    if (!printers.some(p => p.name === printState.device) && def) printState.device = def.name;
+    const statusOf = (p) => {
+      if (!p) return '';
+      const st = p.status;
+      return st === 0 || st == null ? 'Bereit' : 'Offline oder beschäftigt';
+    };
+    const cur = printers.find(p => p.name === printState.device);
+    sec.innerHTML = `<div class="print-page">
+      <div class="print-side">
+        <h1>Drucken</h1>
+        <div class="print-go">
+          <button class="print-btn" id="prGo"><i data-lucide="printer"></i><span>Drucken</span></button>
+          <label class="pr-copies"><span>Exemplare</span><input type="number" id="prCopies" min="1" max="99" value="${printState.copies}"></label>
+        </div>
+        <h2>Drucker</h2>
+        <div class="pr-field">
+          <i data-lucide="printer" class="pr-ico"></i>
+          <select id="prDevice">${printers.length ? printers.map(p => `<option value="${esc(p.name)}" ${p.name === printState.device ? 'selected' : ''}>${esc(p.displayName || p.name)}${p.isDefault ? ' (Standard)' : ''}</option>`).join('') : '<option value="">Kein Drucker gefunden</option>'}</select>
+        </div>
+        <div class="pr-status" id="prStatus">${esc(statusOf(cur))}</div>
+        <h2>Einstellungen</h2>
+        <div class="pr-field"><i data-lucide="files" class="pr-ico"></i>
+          <select id="prRange"><option value="all" ${printState.range === 'all' ? 'selected' : ''}>Alle Seiten drucken</option><option value="custom" ${printState.range === 'custom' ? 'selected' : ''}>Benutzerdefinierter Druckbereich</option></select></div>
+        <div class="pr-field pr-pages" ${printState.range === 'custom' ? '' : 'hidden'}><span class="pr-ico-txt">Seiten:</span><input id="prPages" placeholder="z. B. 1-3, 5" value="${esc(printState.pages)}"></div>
+        <div class="pr-field"><i data-lucide="${printState.orient === 'landscape' ? 'rectangle-horizontal' : 'rectangle-vertical'}" class="pr-ico"></i>
+          <select id="prOrient"><option value="portrait" ${printState.orient === 'portrait' ? 'selected' : ''}>Hochformat</option><option value="landscape" ${printState.orient === 'landscape' ? 'selected' : ''}>Querformat</option></select></div>
+        <div class="pr-field"><i data-lucide="palette" class="pr-ico"></i>
+          <select id="prColor"><option value="1" ${printState.color ? 'selected' : ''}>Farbe</option><option value="0" ${!printState.color ? 'selected' : ''}>Schwarzweiß</option></select></div>
+        <div class="pr-field"><i data-lucide="book-open" class="pr-ico"></i>
+          <select id="prDuplex"><option value="0" ${!printState.duplex ? 'selected' : ''}>Einseitig drucken</option><option value="1" ${printState.duplex ? 'selected' : ''}>Beidseitig drucken</option></select></div>
+        <button class="pr-link" id="prPdf"><i data-lucide="file-down"></i> Stattdessen als PDF speichern</button>
+      </div>
+      <div class="print-preview">
+        <iframe id="prFrame" title="Vorschau"></iframe>
+        <div class="pr-info" id="prInfo"></div>
+      </div>
+    </div>`;
+    icons();
+    const bind = (id, ev, fn) => { const el = $('#' + id); if (el) el.addEventListener(ev, fn); };
+    bind('prDevice', 'change', e => { printState.device = e.target.value; $('#prStatus').textContent = statusOf(printers.find(p => p.name === e.target.value)); });
+    bind('prCopies', 'change', e => { printState.copies = Math.max(1, Math.min(99, +e.target.value || 1)); e.target.value = printState.copies; });
+    bind('prRange', 'change', e => { printState.range = e.target.value; $('.pr-pages').hidden = printState.range !== 'custom'; if (printState.range === 'custom') $('#prPages').focus(); });
+    bind('prPages', 'input', e => { printState.pages = e.target.value; });
+    bind('prOrient', 'change', e => { printState.orient = e.target.value; renderPrint(sec); });
+    bind('prColor', 'change', e => { printState.color = e.target.value === '1'; });
+    bind('prDuplex', 'change', e => { printState.duplex = e.target.value === '1'; });
+    bind('prPdf', 'click', () => exportPDF());
+    bind('prGo', 'click', async () => {
+      let ranges = null;
+      if (printState.range === 'custom') {
+        ranges = parseRanges(printState.pages);
+        if (!ranges || !ranges.length) { toast('Bitte Seiten so angeben: 1-3, 5'); $('#prPages').focus(); return; }
+      }
+      if (!printState.device) { alertBox('Kein Drucker', 'Es wurde kein Drucker gefunden.'); return; }
+      const btn = $('#prGo');
+      btn.disabled = true;
+      btn.querySelector('span').textContent = 'Wird gedruckt …';
+      const res = await native.printRun({ ...printJob(), deviceName: printState.device, copies: printState.copies, color: printState.color, duplex: printState.duplex, pageRanges: ranges });
+      if (res && res.ok) { closeBackstage(); toast('An den Drucker gesendet'); }
+      else {
+        btn.disabled = false;
+        btn.querySelector('span').textContent = 'Drucken';
+        if (res && res.reason !== 'cancelled') alertBox('Drucken fehlgeschlagen', res && res.reason ? String(res.reason) : 'Unbekannter Fehler');
+      }
+    });
+    refreshPreview();
   }
 
   function newDoc() {
@@ -406,12 +598,31 @@
   }
 
   // ---------- Backstage ----------
-  function closeBackstage() { const b = $('#backstage'); if (b) b.classList.remove('open'); }
+  function closeBackstage() {
+    const b = $('#backstage');
+    if (b) b.classList.remove('open');
+    if (printActive) {
+      printActive = false;
+      previewSeq++;
+      if (printUrl) { URL.revokeObjectURL(printUrl); printUrl = null; }
+      const opts = cfg && cfg.pdf || {};
+      if (opts.after) opts.after();
+    }
+  }
   async function openBackstage(section = 'home') {
     const b = $('#backstage');
     b.classList.add('open');
     const sec = $('section', b);
-    if (section === 'home') {
+    b.classList.toggle('printing', section === 'print');
+    if (section !== 'print' && printActive) {
+      printActive = false;
+      previewSeq++;
+      const opts = cfg.pdf || {};
+      if (opts.after) opts.after();
+    }
+    if (section === 'print') {
+      await renderPrint(sec);
+    } else if (section === 'home') {
       let recent = [];
       if (native) recent = (await native.recent()).filter(r => r.page === cfg.app);
       sec.innerHTML = `<h1>Willkommen</h1>
@@ -447,8 +658,9 @@
         <p style="color:var(--text-2)">${esc(doc.path || 'Noch nicht gespeichert')}</p>
         ${cfg.info ? cfg.info() : ''}
         <h2>Über REX Office</h2>
-        <p style="color:var(--text-2);max-width:620px">REX Office 1.0 – Text, Tabellen und Präsentationen.
+        <p style="color:var(--text-2);max-width:620px">REX Office – Text, Tabellen und Präsentationen.
         Kompatibel mit Microsoft Word (.docx), Excel (.xlsx) und PowerPoint (.pptx).</p>
+        <div class="upd-box" id="updBox"></div>
         <h2>Tastenkürzel</h2>
         <table style="border-collapse:collapse;color:var(--text-2)">
           <tr><td style="padding:3px 18px 3px 0">Strg+N</td><td>Neu</td></tr>
@@ -461,6 +673,7 @@
         </table>`;
     }
     $$('nav [data-sec]', b).forEach(x => x.classList.toggle('on', x.dataset.sec === section));
+    if (section === 'info' && $('#updBox')) updates.renderBox($('#updBox'));
     icons();
   }
 
@@ -528,7 +741,7 @@
         <button data-act="save"><i data-lucide="save"></i> Speichern</button>
         <button data-act="saveas"><i data-lucide="save-all"></i> Speichern unter</button>
         <button data-sec="export"><i data-lucide="file-output"></i> Exportieren</button>
-        <button data-act="print"><i data-lucide="printer"></i> Drucken</button>
+        <button data-sec="print"><i data-lucide="printer"></i> Drucken</button>
         <hr>
         <button data-sec="info"><i data-lucide="info"></i> Info</button>
       </nav><section></section>`;
@@ -583,6 +796,11 @@
 
     if (native) {
       native.onSaveAndClose(async () => { if (await save()) native.closeNow(); });
+      if (native.onAskClose) native.onAskClose(async () => {
+        const r = await askSaveDialog();
+        if (r === 'save') { if (await save()) native.closeNow(); }
+        else if (r === 'discard') native.closeNow();
+      });
       const startup = await native.startupFile();
       if (startup) {
         try { await loadFile(await native.readFile(startup)); } catch (e) { alertBox('Fehler', String(e.message || e)); }
@@ -612,7 +830,7 @@
 
   window.Rex = {
     init, native, doc, setDirty, setDoc, save, openFile, loadFile, exportPDF, printDoc, selectTab,
-    settings: settingsApi, avatarHTML,
+    settings: settingsApi, avatarHTML, updates,
     dialog, confirm: confirmBox, alert: alertBox, toast, menu, closeMenu, colorMenu, icons, PALETTE,
     util: { $, $$, ext, stripExt, esc, toBytes, blobToBytes, bytesToDataURL, dataURLToBytes, mimeFromDataURL,
       readImageFile, imageSize, normalizeImage, store, filePath }

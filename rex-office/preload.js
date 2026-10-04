@@ -23,5 +23,13 @@ contextBridge.exposeInMainWorld('rexNative', {
   setDirty: (d) => ipcRenderer.send('app:dirty', d),
   closeNow: () => ipcRenderer.send('app:close-now'),
   onSaveAndClose: (cb) => ipcRenderer.on('app:save-and-close', cb),
+  onAskClose: (cb) => ipcRenderer.on('app:ask-close', cb),
+  printers: () => ipcRenderer.invoke('print:printers'),
+  printPreview: (opts) => ipcRenderer.invoke('print:preview', opts),
+  printRun: (opts) => ipcRenderer.invoke('print:run', opts),
+  checkUpdate: () => ipcRenderer.invoke('update:check'),
+  installUpdate: () => ipcRenderer.invoke('update:install'),
+  onUpdateProgress: (cb) => ipcRenderer.on('update:progress', (_e, p) => cb(p)),
+  version: () => ipcRenderer.invoke('app:version'),
   pathForFile: (file) => { try { return webUtils.getPathForFile(file); } catch { return null; } }
 });

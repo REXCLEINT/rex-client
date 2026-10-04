@@ -14,8 +14,8 @@ Dateien, die du mit REX Office speicherst, lassen sich in Word, Excel, PowerPoin
 
 Lade eine dieser Dateien herunter:
 
-- **`REX-Office-Setup-1.1.1.exe`** – Installer: legt eine Verknüpfung auf dem Desktop und im Startmenü an und meldet sich für `.docx`, `.xlsx`, `.pptx` und `.csv` an („Öffnen mit → REX Office“).
-- **`REX-Office-Portable-1.1.1.exe`** – ohne Installation, einfach starten (z. B. vom USB-Stick).
+- **`REX-Office-Setup-1.2.0.exe`** – Installer: legt eine Verknüpfung auf dem Desktop und im Startmenü an und meldet sich für `.docx`, `.xlsx`, `.pptx` und `.csv` an („Öffnen mit → REX Office“).
+- **`REX-Office-Portable-1.2.0.exe`** – ohne Installation, einfach starten (z. B. vom USB-Stick).
 
 Windows zeigt beim ersten Start eventuell „Der Computer wurde durch Windows geschützt“ an, weil die Datei nicht digital signiert ist. Dann auf **Weitere Informationen → Trotzdem ausführen** klicken.
 
@@ -59,6 +59,12 @@ Alles lässt sich später über dein Profilbild oben rechts auf der Startseite �
 **Überall**
 - Dunkler Modus, Rückgängig/Wiederholen, „Zuletzt verwendet“, PDF-Export, Drucken
 - Fragt beim Schließen, ob ungespeicherte Änderungen gespeichert werden sollen
+
+## Automatische Updates
+
+REX Office prüft beim Start, ob es eine neue Version gibt, und zeigt dann auf der Startseite „Jetzt aktualisieren“ an (auch unter **Datei → Info**). Ein Klick lädt das Update herunter, installiert es im Hintergrund und startet REX Office neu.
+
+**Neue Version veröffentlichen:** In `rex-office/package.json` die `version` erhöhen (z. B. `1.2.0` → `1.3.0`) und auf GitHub hochladen. Der Workflow baut die `.exe` und erstellt automatisch das Release `office-v1.3.0`. Diese Releases werden nie als „latest“ markiert, damit die Updates des REX Clients nicht gestört werden.
 
 ## Selbst bauen (für Entwickler)
 

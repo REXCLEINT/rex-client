@@ -223,7 +223,7 @@ svg.lucide { width: 18px; height: 18px; stroke-width: 1.8; flex: none; }
   padding: 10px 18px; border-radius: 6px; z-index: 3000; box-shadow: var(--shadow); opacity: 0; transition: opacity .2s;
   pointer-events: none;
 }
-.toast.show { opacity: 1; }
+.toast.visible { opacity: 1; }
 
 .find-bar {
   position: absolute; top: 8px; right: 24px; z-index: 50; background: var(--panel); border: 1px solid var(--border);
@@ -240,3 +240,48 @@ svg.lucide { width: 18px; height: 18px; stroke-width: 1.8; flex: none; }
   html, body { background: #fff !important; overflow: visible !important; display: block; height: auto; }
   .titlebar, .tabs, .ribbon, .statusbar, .backstage, .no-print { display: none !important; }
 }
+
+/* ---------- Druckansicht (Datei > Drucken) ---------- */
+.backstage.printing section { padding: 0; overflow: hidden; display: flex; }
+.print-page { display: flex; flex: 1; min-height: 0; }
+.print-side { width: 340px; flex: none; padding: 30px 28px; overflow-y: auto; border-right: 1px solid var(--border); background: var(--panel); }
+.print-side h1 { margin-bottom: 18px; }
+.print-side h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: var(--text-2); margin: 24px 0 8px; }
+.print-go { display: flex; gap: 14px; align-items: center; }
+.print-btn {
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; width: 96px; height: 92px;
+  border: 1px solid var(--border); border-radius: 8px; background: var(--panel); cursor: pointer; color: var(--text); font-size: 14px;
+}
+.print-btn svg.lucide { width: 34px; height: 34px; color: var(--accent); stroke-width: 1.5; }
+.print-btn:hover { border-color: var(--accent); background: var(--accent-soft); }
+.print-btn:disabled { opacity: .6; cursor: progress; }
+.print-btn.small { flex-direction: row; width: auto; height: 34px; padding: 0 14px; font-size: 13px; }
+.print-btn.small svg.lucide { width: 18px; height: 18px; }
+.pr-copies { display: flex; flex-direction: column; gap: 4px; color: var(--text-2); font-size: 12px; }
+.pr-copies input { width: 74px; height: 32px; border: 1px solid var(--border); border-radius: 4px; padding: 0 8px; background: var(--panel-2); font-size: 14px; }
+.pr-field { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.pr-field[hidden] { display: none !important; }
+.pr-field select, .pr-field input { flex: 1; height: 36px; border: 1px solid var(--border); border-radius: 5px; padding: 0 10px; background: var(--panel-2); min-width: 0; }
+.pr-field select:focus, .pr-field input:focus, .pr-copies input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.pr-ico { color: var(--text-2); }
+.pr-ico-txt { width: 48px; color: var(--text-2); font-size: 12px; }
+.pr-status { color: var(--text-2); font-size: 12px; margin: -2px 0 0 28px; }
+.pr-link { margin-top: 26px; background: none; border: 0; color: var(--accent); cursor: pointer; display: flex; align-items: center; gap: 8px; padding: 0; font-size: 13px; }
+.pr-link:hover { text-decoration: underline; }
+.print-preview { flex: 1; display: flex; flex-direction: column; background: var(--canvas); min-width: 0; }
+.print-preview iframe { flex: 1; border: 0; width: 100%; background: var(--canvas); }
+.pr-info { text-align: center; padding: 8px; color: var(--text-2); font-size: 12px; border-top: 1px solid var(--border); background: var(--panel); }
+
+/* ---------- Speichern-Dialog ---------- */
+.save-ask { width: 480px; padding: 24px 24px 18px; }
+.sa-head { display: flex; gap: 16px; }
+.sa-ico { width: 44px; height: 44px; border-radius: 10px; background: var(--accent); color: #fff; display: grid; place-items: center; font-weight: 800; font-size: 20px; flex: none; }
+.save-ask h3 { margin: 2px 0 6px; font-size: 18px; }
+.save-ask p { margin: 0; color: var(--text-2); line-height: 1.45; }
+.sa-actions { margin-top: 22px; align-items: center; }
+
+/* ---------- Updates ---------- */
+.upd-box { margin-top: 6px; }
+.upd-new { display: flex; align-items: center; gap: 16px; padding: 12px 16px; border-radius: 8px; background: var(--accent-soft); max-width: 620px; }
+.upd-bar { height: 8px; border-radius: 4px; background: var(--hover); overflow: hidden; }
+.upd-bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .15s; }

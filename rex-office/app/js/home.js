@@ -197,4 +197,20 @@
     else openApp(EXT_APP[ext]);
   });
   Rex.icons();
+
+  // ---------- Update-Hinweis ----------
+  if (native && native.checkUpdate) {
+    setTimeout(async () => {
+      const info = await Rex.updates.check();
+      if (!info || !info.available) return;
+      const bar = document.createElement('div');
+      bar.className = 'upd-new';
+      bar.style.cssText = 'margin:0 0 18px;max-width:none;box-shadow:var(--shadow)';
+      bar.innerHTML = `<i data-lucide="sparkles"></i><div style="flex:1"><b>${t('Neue Version')} ${esc(info.version)}</b> – ${t('REX Office kann jetzt aktualisiert werden.')}</div>
+        <button class="print-btn small" id="homeUpd"><i data-lucide="download"></i><span>${t('Jetzt aktualisieren')}</span></button>`;
+      $('.wrap').insertBefore(bar, $('.wrap').firstChild);
+      Rex.icons();
+      $('#homeUpd').onclick = () => Rex.updates.install(info);
+    }, 2500);
+  }
 })();

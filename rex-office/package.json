@@ -1,7 +1,7 @@
 {
   "name": "rex-office",
   "productName": "REX Office",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "REX Office – Textverarbeitung, Tabellenkalkulation und Präsentationen mit .docx, .xlsx und .pptx",
   "main": "main.js",
   "author": "REX",
