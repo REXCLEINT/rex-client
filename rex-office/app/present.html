@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval'; font-src 'self' data:">
+<title>REX Präsentation</title>
+<link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/present.css">
+</head>
+<body>
+<div class="titlebar"></div>
+<div class="tabs">
+  <button data-tab="start">Start</button>
+  <button data-tab="insert">Einfügen</button>
+  <button data-tab="design">Entwurf</button>
+  <button data-tab="transitions">Übergänge</button>
+  <button data-tab="show">Bildschirmpräsentation</button>
+  <button data-tab="view">Ansicht</button>
+</div>
+
+<div class="ribbon">
+  <!-- START -->
+  <div class="pane" data-pane="start">
+    <div class="group">
+      <div class="content">
+        <div class="split" style="flex-direction:column">
+          <button class="btn big" data-cmd="newSlide" title="Neue Folie (Strg+M)"><i data-lucide="file-plus-2"></i>Neue Folie</button>
+        </div>
+        <div class="col">
+          <button class="btn text" id="layoutBtn"><i data-lucide="layout-template"></i> Layout</button>
+          <button class="btn text" data-cmd="duplicateSlide"><i data-lucide="copy-plus"></i> Duplizieren</button>
+          <button class="btn text" data-cmd="deleteSlide"><i data-lucide="trash-2"></i> Löschen</button>
+        </div>
+      </div>
+      <div class="label">Folien</div>
+    </div>
+    <div class="group">
+      <div class="content col">
+        <div class="row">
+          <select class="sel" id="fontFamily" title="Schriftart" style="width:140px"></select>
+          <select class="sel" id="fontSize" title="Schriftgröße" style="width:58px"></select>
+          <button class="btn" data-cmd="growFont" title="Schrift vergrößern"><i data-lucide="a-arrow-up"></i></button>
+          <button class="btn" data-cmd="shrinkFont" title="Schrift verkleinern"><i data-lucide="a-arrow-down"></i></button>
+        </div>
+        <div class="row">
+          <button class="btn" data-tcmd="bold" title="Fett (Strg+B)"><i data-lucide="bold"></i></button>
+          <button class="btn" data-tcmd="italic" title="Kursiv (Strg+I)"><i data-lucide="italic"></i></button>
+          <button class="btn" data-tcmd="underline" title="Unterstrichen (Strg+U)"><i data-lucide="underline"></i></button>
+          <button class="btn" data-tcmd="strikeThrough" title="Durchgestrichen"><i data-lucide="strikethrough"></i></button>
+          <button class="btn color-btn" id="textColorBtn" title="Schriftfarbe"><i data-lucide="baseline"></i><span class="bar" id="textColorBar" style="background:#c00000"></span></button>
+          <button class="btn" data-tcmd="removeFormat" title="Formatierung löschen"><i data-lucide="remove-formatting"></i></button>
+        </div>
+      </div>
+      <div class="label">Schriftart</div>
+    </div>
+    <div class="group">
+      <div class="content col">
+        <div class="row">
+          <button class="btn" data-tcmd="insertUnorderedList" title="Aufzählung"><i data-lucide="list"></i></button>
+          <button class="btn" data-tcmd="insertOrderedList" title="Nummerierung"><i data-lucide="list-ordered"></i></button>
+          <button class="btn" data-tcmd="outdent" title="Einzug verkleinern"><i data-lucide="indent-decrease"></i></button>
+          <button class="btn" data-tcmd="indent" title="Einzug vergrößern"><i data-lucide="indent-increase"></i></button>
+        </div>
+        <div class="row">
+          <button class="btn" data-tcmd="justifyLeft" title="Linksbündig"><i data-lucide="align-left"></i></button>
+          <button class="btn" data-tcmd="justifyCenter" title="Zentriert"><i data-lucide="align-center"></i></button>
+          <button class="btn" data-tcmd="justifyRight" title="Rechtsbündig"><i data-lucide="align-right"></i></button>
+          <button class="btn" id="valignBtn" title="Text vertikal ausrichten"><i data-lucide="align-vertical-justify-center"></i></button>
+        </div>
+      </div>
+      <div class="label">Absatz</div>
+    </div>
+    <div class="group">
+      <div class="content">
+        <button class="btn big" id="shapeBtn2"><i data-lucide="shapes"></i>Formen</button>
+        <div class="col">
+          <button class="btn text color-btn" id="fillBtn"><i data-lucide="paint-bucket"></i> Füllung<span class="bar" id="fillBar" style="background:#4472c4;right:auto;width:18px"></span></button>
+          <button class="btn text color-btn" id="lineBtn"><i data-lucide="pen-line"></i> Kontur<span class="bar" id="lineBar" style="background:#2f528f;right:auto;width:18px"></span></button>
+          <button class="btn text" id="arrangeBtn"><i data-lucide="layers"></i> Anordnen</button>
+        </div>
+      </div>
+      <div class="label">Zeichnung</div>
+    </div>
+  </div>
+
+  <!-- EINFUEGEN -->
+  <div class="pane" data-pane="insert">
+    <div class="group">
+      <div class="content"><button class="btn big" data-cmd="newSlide"><i data-lucide="file-plus-2"></i>Neue Folie</button></div>
+      <div class="label">Folien</div>
+    </div>
+    <div class="group">
+      <div class="content">
+        <button class="btn big" data-cmd="insertImage"><i data-lucide="image"></i>Bild</button>
+        <button class="btn big" id="shapeBtn"><i data-lucide="shapes"></i>Formen</button>
+        <button class="btn big" data-cmd="insertTable"><i data-lucide="table"></i>Tabelle</button>
+        <button class="btn big" id="chartBtn"><i data-lucide="chart-column"></i>Diagramm</button>
+      </div>
+      <div class="label">Illustrationen</div>
+    </div>
+    <div class="group">
+      <div class="content">
+        <button class="btn big" data-cmd="insertText"><i data-lucide="text-cursor-input"></i>Textfeld</button>
+        <button class="btn big" data-cmd="insertWordArt"><i data-lucide="type"></i>WordArt</button>
+        <button class="btn big" id="symbolBtn"><i data-lucide="omega"></i>Symbol</button>
+        <button class="btn big" data-cmd="slideNumber"><i data-lucide="hash"></i>Folien&shy;nummer</button>
+      </div>
+      <div class="label">Text</div>
+    </div>
+  </div>
+
+  <!-- ENTWURF -->
+  <div class="pane" data-pane="design">
+    <div class="group">
+      <div class="content"><div class="themes" id="themeGallery"></div></div>
+      <div class="label">Designs (auf alle Folien)</div>
+    </div>
+    <div class="group">
+      <div class="content">
+        <button class="btn big" id="sizeBtn"><i data-lucide="ratio"></i>Folien&shy;größe</button>
+        <button class="btn big color-btn" id="bgBtn"><i data-lucide="paint-bucket"></i>Hinter&shy;grund</button>
+        <button class="btn big" data-cmd="bgImage"><i data-lucide="image"></i>Hintergrund&shy;bild</button>
+      </div>
+      <div class="label">Anpassen</div>
+    </div>
+  </div>
+
+  <!-- UEBERGAENGE -->
+  <div class="pane" data-pane="transitions">
+    <div class="group">
+      <div class="content" id="transGallery"></div>
+      <div class="label">Übergang zu dieser Folie</div>
+    </div>
+    <div class="group">
+      <div class="content"><button class="btn big" data-cmd="transAll"><i data-lucide="copy-check"></i>Für alle übernehmen</button></div>
+      <div class="label">Anwenden</div>
+    </div>
+  </div>
+
+  <!-- BILDSCHIRMPRAESENTATION -->
+  <div class="pane" data-pane="show">
+    <div class="group">
+      <div class="content">
+        <button class="btn big" data-cmd="showStart"><i data-lucide="play"></i>Von Beginn an</button>
+        <button class="btn big" data-cmd="showCurrent"><i data-lucide="presentation"></i>Ab aktueller Folie</button>
+      </div>
+      <div class="label">Präsentation starten</div>
+    </div>
+  </div>
+
+  <!-- ANSICHT -->
+  <div class="pane" data-pane="view">
+    <div class="group">
+      <div class="content">
+        <button class="btn big" data-cmd="zoomOut"><i data-lucide="zoom-out"></i>Kleiner</button>
+        <button class="btn big" data-cmd="zoomFit"><i data-lucide="maximize"></i>Anpassen</button>
+        <button class="btn big" data-cmd="zoomIn"><i data-lucide="zoom-in"></i>Größer</button>
+      </div>
+      <div class="label">Zoom</div>
+    </div>
+    <div class="group">
+      <div class="content">
+        <button class="btn big" data-cmd="toggleNotes" id="notesBtn"><i data-lucide="notebook-pen"></i>Notizen</button>
+        <button class="btn big" data-cmd="toggleGuides" id="guidesBtn"><i data-lucide="ruler"></i>Führungs&shy;linien</button>
+      </div>
+      <div class="label">Anzeigen</div>
+    </div>
+  </div>
+</div>
+
+<div class="present-main">
+  <aside class="slide-list" id="slideList"></aside>
+  <div class="editor-col">
+    <div class="stage" id="stage">
+      <div class="stage-inner" id="stageInner">
+        <div class="slide-canvas" id="canvas"></div>
+        <div class="sel-layer" id="selLayer"></div>
+      </div>
+    </div>
+    <div class="notes" id="notesWrap">
+      <textarea id="notes" placeholder="Klicken, um Notizen hinzuzufügen"></textarea>
+    </div>
+  </div>
+</div>
+
+<div class="statusbar">
+  <span id="stSlide">Folie 1 von 1</span>
+  <span>Deutsch (Deutschland)</span>
+  <span class="spacer"></span>
+  <button class="btn" data-cmd="showCurrent" title="Bildschirmpräsentation (F5)"><i data-lucide="presentation"></i></button>
+  <button class="btn" data-cmd="zoomOut" title="Verkleinern"><i data-lucide="minus"></i></button>
+  <input type="range" id="zoomRange" min="20" max="200" step="5" value="100">
+  <button class="btn" data-cmd="zoomIn" title="Vergrößern"><i data-lucide="plus"></i></button>
+  <span id="zoomLabel" style="width:40px">100 %</span>
+  <button class="btn" data-cmd="zoomFit" title="An Fenster anpassen"><i data-lucide="maximize"></i></button>
+</div>
+
+<div class="show" id="show" hidden>
+  <div class="show-slide" id="showSlide"></div>
+  <div class="show-bar" id="showBar">
+    <button data-show="prev" title="Zurück"><i data-lucide="chevron-left"></i></button>
+    <span id="showNum"></span>
+    <button data-show="next" title="Weiter"><i data-lucide="chevron-right"></i></button>
+    <button data-show="end" title="Beenden (Esc)"><i data-lucide="x"></i></button>
+  </div>
+</div>
+
+<div id="printArea" class="print-area"></div>
+
+<script src="vendor/lucide.min.js"></script>
+<script src="vendor/jszip.min.js"></script>
+<script src="vendor/pptxgen.bundle.js"></script>
+<script src="js/common.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/pptx-io.js"></script>
+<script src="js/present.js"></script>
+</body>
+</html>

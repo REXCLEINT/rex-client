@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval'; font-src 'self' data:">
+<title>REX Tabelle</title>
+<link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/calc.css">
+</head>
+<body>
+<div class="titlebar"></div>
+<div class="tabs">
+  <button data-tab="start">Start</button>
+  <button data-tab="insert">Einfügen</button>
+  <button data-tab="formulas">Formeln</button>
+  <button data-tab="data">Daten</button>
+  <button data-tab="view">Ansicht</button>
+</div>
+
+<div class="ribbon">
+  <!-- START -->
+  <div class="pane" data-pane="start">
+    <div class="group">
+      <div class="content">
+        <button class="btn big" data-cmd="paste" title="Einfügen (Strg+V)"><i data-lucide="clipboard-paste"></i>Einfügen</button>
+        <div class="col">
+          <button class="btn" data-cmd="cut" title="Ausschneiden (Strg+X)"><i data-lucide="scissors"></i></button>
+          <button class="btn" data-cmd="copy" title="Kopieren (Strg+C)"><i data-lucide="copy"></i></button>
+          <button class="btn" data-cmd="formatPainter" id="painterBtn" title="Format übertragen"><i data-lucide="paintbrush"></i></button>
+        </div>
+      </div>
+      <div class="label">Zwischenablage</div>
+    </div>
+    <div class="group">
+      <div class="content col">
+        <div class="row">
+          <select class="sel" id="fontFamily" title="Schriftart" style="width:130px"></select>
+          <select class="sel" id="fontSize" title="Schriftgröße" style="width:56px"></select>
+        </div>
+        <div class="row">
+          <button class="btn" data-style="b" title="Fett (Strg+B)"><i data-lucide="bold"></i></button>
+          <button class="btn" data-style="i" title="Kursiv (Strg+I)"><i data-lucide="italic"></i></button>
+          <button class="btn" data-style="u" title="Unterstrichen (Strg+U)"><i data-lucide="underline"></i></button>
+          <button class="btn" data-style="s" title="Durchgestrichen"><i data-lucide="strikethrough"></i></button>
+          <button class="btn" id="borderBtn" title="Rahmen"><i data-lucide="grid-2x2"></i></button>
+          <button class="btn color-btn" id="fillBtn" title="Füllfarbe"><i data-lucide="paint-bucket"></i><span class="bar" id="fillBar" style="background:#ffff00"></span></button>
+          <button class="btn color-btn" id="colorBtn" title="Schriftfarbe"><i data-lucide="baseline"></i><span class="bar" id="colorBar" style="background:#e00000"></span></button>
+        </div>
+      </div>
+      <div class="label">Schriftart</div>
+    </div>
+    <div class="group">
+      <div class="content col">
+        <div class="row">
+          <button class="btn" data-valign="top" title="Oben ausrichten"><i data-lucide="align-vertical-justify-start"></i></button>
+          <button class="btn" data-valign="middle" title="Zentriert ausrichten"><i data-lucide="align-vertical-justify-center"></i></button>
+          <button class="btn" data-valign="bottom" title="Unten ausrichten"><i data-lucide="align-vertical-justify-end"></i></button>
+          <button class="btn text" data-cmd="wrap" id="wrapBtn" title="Textumbruch"><i data-lucide="wrap-text"></i> Umbruch</button>
+        </div>
+        <div class="row">
+          <button class="btn" data-align="left" title="Linksbündig"><i data-lucide="align-left"></i></button>
+          <button class="btn" data-align="center" title="Zentriert"><i data-lucide="align-center"></i></button>
+          <button class="btn" data-align="right" title="Rechtsbündig"><i data-lucide="align-right"></i></button>
+          <button class="btn text" data-cmd="merge" id="mergeBtn" title="Verbinden und zentrieren"><i data-lucide="table-cells-merge"></i> Verbinden</button>
+        </div>
+      </div>
+      <div class="label">Ausrichtung</div>
+    </div>
+    <div class="group">
+      <div class="content col">
+        <div class="row">
+          <select class="sel" id="numFmt" title="Zahlenformat" style="width:150px"></select>
+        </div>
+        <div class="row">
+          <button class="btn" data-fmt="#,##0.00 &quot;€&quot;" title="Währung (€)"><i data-lucide="euro"></i></button>
+          <button class="btn" data-fmt="0%" title="Prozent"><i data-lucide="percent"></i></button>
+          <button class="btn text" data-fmt="#,##0" title="1000er-Trennzeichen">000</button>
+          <button class="btn text" data-cmd="decInc" title="Dezimalstelle hinzufügen">,0→</button>
+          <button class="btn text" data-cmd="decDec" title="Dezimalstelle entfernen">←,0</button>
+        </div>
+      </div>
+      <div class="label">Zahl</div>
+    </div>
+    <div class="group">
+      <div class="content">
+        <button class="btn big" id="insertCellsBtn"><i data-lucide="table-rows-split"></i>Einfügen</button>
+        <button class="btn big" id="deleteCellsBtn"><i data-lucide="trash-2"></i>Löschen</button>
+        <button class="btn big" id="formatCellsBtn"><i data-lucide="ruler"></i>Format</button>
+      </div>
+      <div class="label">Zellen</div>
+    </div>
+    <div class="group">
+      <div class="content col">
+        <div class="split"><button class="btn text" data-cmd="autosum" title="AutoSumme (Alt+=)"><i data-lucide="sigma"></i> AutoSumme</button><button class="btn drop" id="autosumDrop"><i data-lucide="chevron-down"></i></button></div>
+        <button class="btn text" id="sortBtn"><i data-lucide="arrow-down-up"></i> Sortieren</button>
+        <button class="btn text" id="clearBtn"><i data-lucide="eraser"></i> Löschen</button>
+      </div>
+      <div class="label">Bearbeiten</div>
+    </div>
+  </div>
+
+  <!-- EINFUEGEN -->
+  <div class="pane" data-pane="insert">
+    <div class="group">
+      <div class="content">
+        <button class="btn big" data-chart="column"><i data-lucide="chart-column"></i>Säulen</button>
+        <button class="btn big" data-chart="bar"><i data-lucide="chart-bar"></i>Balken</button>
+        <button class="btn big" data-chart="line"><i data-lucide="chart-line"></i>Linie</button>
+        <button class="btn big" data-chart="pie"><i data-lucide="chart-pie"></i>Kreis</button>
+      </div>
+      <div class="label">Diagramme</div>
+    </div>
+    <div class="group">
+      <div class="content">
+        <button class="btn big" data-cmd="insertFunction"><i data-lucide="square-function"></i>Funktion</button>
+        <button class="btn big" data-cmd="insertDate"><i data-lucide="calendar"></i>Heute</button>
+      </div>
+      <div class="label">Daten</div>
+    </div>
+  </div>
+
+  <!-- FORMELN -->
+  <div class="pane" data-pane="formulas">
+    <div class="group">
+      <div class="content">
+        <button class="btn big" data-cmd="insertFunction"><i data-lucide="square-function"></i>Funktion einfügen</button>
+        <button class="btn big" data-cmd="autosum"><i data-lucide="sigma"></i>AutoSumme</button>
+        <button class="btn big" id="fnCatBtn"><i data-lucide="library"></i>Bibliothek</button>
+      </div>
+      <div class="label">Funktionsbibliothek</div>
+    </div>
+    <div class="group">
+      <div class="content">
+        <button class="btn big" data-cmd="showFormulas" id="showFormulasBtn"><i data-lucide="square-function"></i>Formeln anzeigen</button>
+        <button class="btn big" data-cmd="recalc"><i data-lucide="refresh-cw"></i>Neu berechnen</button>
+      </div>
+      <div class="label">Berechnung</div>
+    </div>
+  </div>
+
+  <!-- DATEN -->
+  <div class="pane" data-pane="data">
+    <div class="group">
+      <div class="content">
+        <button class="btn big" data-cmd="sortAsc"><i data-lucide="arrow-up-a-z"></i>A bis Z</button>
+        <button class="btn big" data-cmd="sortDesc"><i data-lucide="arrow-down-z-a"></i>Z bis A</button>
+        <button class="btn big" data-cmd="filter" id="filterBtn"><i data-lucide="filter"></i>Filtern</button>
+      </div>
+      <div class="label">Sortieren und Filtern</div>
+    </div>
+    <div class="group">
+      <div class="content">
+        <button class="btn big" data-cmd="dedupe"><i data-lucide="copy-x"></i>Duplikate entfernen</button>
+        <button class="btn big" data-cmd="textToCols"><i data-lucide="split"></i>Text in Spalten</button>
+      </div>
+      <div class="label">Datentools</div>
+    </div>
+  </div>
+
+  <!-- ANSICHT -->
+  <div class="pane" data-pane="view">
+    <div class="group">
+      <div class="content">
+        <button class="btn big" data-cmd="gridlines" id="gridBtn"><i data-lucide="grid-3x3"></i>Gitternetz</button>
+        <button class="btn big" data-cmd="freeze" id="freezeBtn"><i data-lucide="panel-top-dashed"></i>Fixieren</button>
+      </div>
+      <div class="label">Anzeigen</div>
+    </div>
+    <div class="group">
+      <div class="content">
+        <button class="btn big" data-cmd="zoomOut"><i data-lucide="zoom-out"></i>Kleiner</button>
+        <button class="btn big" data-cmd="zoom100"><i data-lucide="search"></i>100 %</button>
+        <button class="btn big" data-cmd="zoomIn"><i data-lucide="zoom-in"></i>Größer</button>
+      </div>
+      <div class="label">Zoom</div>
+    </div>
+  </div>
+</div>
+
+<div class="formula-bar">
+  <input class="name-box" id="nameBox" spellcheck="false" title="Namenfeld – Zelle eingeben und Enter drücken">
+  <button class="btn" data-cmd="insertFunction" title="Funktion einfügen"><i data-lucide="square-function"></i></button>
+  <input class="fx-input" id="fxInput" spellcheck="false" autocomplete="off">
+</div>
+
+<main class="grid-wrap" id="gridWrap" tabindex="-1">
+  <div class="corner" id="corner"></div>
+  <div class="col-head" id="colHead"><div class="inner" id="colHeadInner"></div></div>
+  <div class="row-head" id="rowHead"><div class="inner" id="rowHeadInner"></div></div>
+  <div class="scroller" id="scroller">
+    <div class="sizer" id="sizer">
+      <div class="gridlines" id="gridlines"></div>
+      <div class="cells" id="cells"></div>
+      <div class="sel-range" id="selRange"></div>
+      <div class="sel-cursor" id="selCursor"></div>
+      <div class="copy-ants" id="copyAnts" hidden></div>
+      <div class="fill-handle" id="fillHandle"></div>
+      <div class="fill-preview" id="fillPreview" hidden></div>
+      <div class="charts" id="charts"></div>
+      <textarea class="cell-input" id="cellInput" spellcheck="false" autocomplete="off"></textarea>
+    </div>
+  </div>
+  <div class="ac-list" id="acList" hidden></div>
+</main>
+
+<div class="sheet-bar">
+  <button class="btn" data-cmd="addSheet" title="Neues Tabellenblatt"><i data-lucide="plus"></i></button>
+  <div class="sheet-tabs" id="sheetTabs"></div>
+</div>
+<div class="statusbar">
+  <span id="stMode">Bereit</span>
+  <span class="spacer"></span>
+  <span id="stAgg"></span>
+  <button class="btn" data-cmd="zoomOut" title="Verkleinern"><i data-lucide="minus"></i></button>
+  <input type="range" id="zoomRange" min="50" max="200" step="10" value="100">
+  <button class="btn" data-cmd="zoomIn" title="Vergrößern"><i data-lucide="plus"></i></button>
+  <span id="zoomLabel" style="width:40px">100 %</span>
+</div>
+
+<div id="printArea" class="print-area"></div>
+
+<script src="vendor/lucide.min.js"></script>
+<script src="vendor/jszip.min.js"></script>
+<script src="vendor/exceljs.min.js"></script>
+<script src="js/common.js"></script>
+<script src="js/formula.js"></script>
+<script src="js/numfmt.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/xlsx-io.js"></script>
+<script src="js/calc.js"></script>
+</body>
+</html>

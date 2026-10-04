@@ -1,0 +1,51 @@
+{
+  "name": "rex-office",
+  "productName": "REX Office",
+  "version": "1.0.0",
+  "description": "REX Office – Textverarbeitung, Tabellenkalkulation und Präsentationen mit .docx, .xlsx und .pptx",
+  "main": "main.js",
+  "author": "REX",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win nsis portable",
+    "dist:dir": "electron-builder --win --dir"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "de.rex.office",
+    "productName": "REX Office",
+    "files": [
+      "main.js",
+      "preload.js",
+      "app/**/*"
+    ],
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "fileAssociations": [
+      { "ext": "docx", "name": "Word-Dokument", "description": "Word-Dokument", "role": "Editor" },
+      { "ext": "xlsx", "name": "Excel-Arbeitsmappe", "description": "Excel-Arbeitsmappe", "role": "Editor" },
+      { "ext": "pptx", "name": "PowerPoint-Präsentation", "description": "PowerPoint-Präsentation", "role": "Editor" },
+      { "ext": "csv", "name": "CSV-Datei", "description": "CSV-Datei", "role": "Editor" }
+    ],
+    "win": {
+      "icon": "build/icon.png",
+      "target": ["nsis", "portable"]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "REX Office"
+    },
+    "portable": {
+      "artifactName": "REX-Office-Portable-${version}.exe"
+    }
+  }
+}

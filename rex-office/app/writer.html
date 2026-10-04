@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; font-src 'self' data:">
+<title>REX Text</title>
+<link rel="stylesheet" href="css/common.css">
+<link rel="stylesheet" href="css/writer.css">
+</head>
+<body>
+<div class="titlebar"></div>
+<div class="tabs">
+  <button data-tab="start">Start</button>
+  <button data-tab="insert">Einfügen</button>
+  <button data-tab="layout">Layout</button>
+  <button data-tab="table" id="tableTab" hidden>Tabelle</button>
+  <button data-tab="view">Ansicht</button>
+</div>
+
+<div class="ribbon">
+  <!-- START -->
+  <div class="pane" data-pane="start">
+    <div class="group">
+      <div class="content">
+        <button class="btn big" data-cmd="paste" title="Einfügen (Strg+V)"><i data-lucide="clipboard-paste"></i>Einfügen</button>
+        <div class="col">
+          <button class="btn" data-cmd="cut" title="Ausschneiden (Strg+X)"><i data-lucide="scissors"></i></button>
+          <button class="btn" data-cmd="copy" title="Kopieren (Strg+C)"><i data-lucide="copy"></i></button>
+        </div>
+      </div>
+      <div class="label">Zwischenablage</div>
+    </div>
+    <div class="group">
+      <div class="content col">
+        <div class="row">
+          <select class="sel" id="fontFamily" title="Schriftart" style="width:150px"></select>
+          <select class="sel" id="fontSize" title="Schriftgröße" style="width:58px"></select>
+          <button class="btn" data-cmd="growFont" title="Schrift vergrößern"><i data-lucide="a-arrow-up"></i></button>
+          <button class="btn" data-cmd="shrinkFont" title="Schrift verkleinern"><i data-lucide="a-arrow-down"></i></button>
+        </div>
+        <div class="row">
+          <button class="btn" data-cmd="bold" title="Fett (Strg+B)"><i data-lucide="bold"></i></button>
+          <button class="btn" data-cmd="italic" title="Kursiv (Strg+I)"><i data-lucide="italic"></i></button>
+          <button class="btn" data-cmd="underline" title="Unterstrichen (Strg+U)"><i data-lucide="underline"></i></button>
+          <button class="btn" data-cmd="strikeThrough" title="Durchgestrichen"><i data-lucide="strikethrough"></i></button>
+          <button class="btn" data-cmd="subscript" title="Tiefgestellt"><i data-lucide="subscript"></i></button>
+          <button class="btn" data-cmd="superscript" title="Hochgestellt"><i data-lucide="superscript"></i></button>
+          <button class="btn color-btn" id="textColorBtn" title="Schriftfarbe"><i data-lucide="baseline"></i><span class="bar" id="textColorBar" style="background:#e00000"></span></button>
+          <button class="btn color-btn" id="highlightBtn" title="Texthervorhebung"><i data-lucide="highlighter"></i><span class="bar" id="highlightBar" style="background:#ffff00"></span></button>
+          <button class="btn" data-cmd="removeFormat" title="Formatierung löschen"><i data-lucide="remove-formatting"></i></button>
+        </div>
+      </div>
+      <div class="label">Schriftart</div>
+    </div>
+    <div class="group">
+      <div class="content col">
+        <div class="row">
+          <button class="btn" data-cmd="insertUnorderedList" title="Aufzählung"><i data-lucide="list"></i></button>
+          <button class="btn" data-cmd="insertOrderedList" title="Nummerierung"><i data-lucide="list-ordered"></i></button>
+          <button class="btn" data-cmd="outdent" title="Einzug verkleinern"><i data-lucide="indent-decrease"></i></button>
+          <button class="btn" data-cmd="indent" title="Einzug vergrößern"><i data-lucide="indent-increase"></i></button>
+          <button class="btn" id="lineSpacingBtn" title="Zeilenabstand"><i data-lucide="list-chevrons-up-down"></i></button>
+        </div>
+        <div class="row">
+          <button class="btn" data-cmd="justifyLeft" title="Linksbündig (Strg+L)"><i data-lucide="align-left"></i></button>
+          <button class="btn" data-cmd="justifyCenter" title="Zentriert (Strg+E)"><i data-lucide="align-center"></i></button>
+          <button class="btn" data-cmd="justifyRight" title="Rechtsbündig (Strg+R)"><i data-lucide="align-right"></i></button>
+          <button class="btn" data-cmd="justifyFull" title="Blocksatz (Strg+J)"><i data-lucide="align-justify"></i></button>
+          <button class="btn color-btn" id="shadingBtn" title="Absatz-Schattierung"><i data-lucide="paint-bucket"></i><span class="bar" id="shadingBar" style="background:#dbe6f6"></span></button>
+        </div>
+      </div>
+      <div class="label">Absatz</div>
+    </div>
+    <div class="group">
+      <div class="content">
+        <div class="styles" id="styleGallery"></div>
+      </div>
+      <div class="label">Formatvorlagen</div>
+    </div>
+    <div class="group">
+      <div class="content col">
+        <button class="btn text" data-cmd="find" title="Suchen (Strg+F)"><i data-lucide="search"></i> Suchen</button>
+        <button class="btn text" data-cmd="replace" title="Ersetzen (Strg+H)"><i data-lucide="replace"></i> Ersetzen</button>
+        <button class="btn text" data-cmd="selectAll" title="Alles markieren (Strg+A)"><i data-lucide="text-select"></i> Markieren</button>
+      </div>
+      <div class="label">Bearbeiten</div>
+    </div>
+  </div>
+
+  <!-- EINFUEGEN -->
+  <div class="pane" data-pane="insert">
+    <div class="group">
+      <div class="content">
+        <button class="btn big" data-cmd="pageBreak" title="Seitenumbruch (Strg+Enter)"><i data-lucide="file-plus-2"></i>Seiten&shy;umbruch</button>
+      </div>
+      <div class="label">Seiten</div>
+    </div>
+    <div class="group">
+      <div class="content">
+        <button class="btn big" id="tableBtn" title="Tabelle einfügen"><i data-lucide="table"></i>Tabelle</button>
+      </div>
+      <div class="label">Tabellen</div>
+    </div>
+    <div class="group">
+      <div class="content">
+        <button class="btn big" data-cmd="image" title="Bild einfügen"><i data-lucide="image"></i>Bild</button>
+        <button class="btn big" data-cmd="hr" title="Horizontale Linie"><i data-lucide="minus"></i>Linie</button>
+      </div>
+      <div class="label">Illustrationen</div>
+    </div>
+    <div class="group">
+      <div class="content">
+        <button class="btn big" data-cmd="link" title="Link einfügen (Strg+K)"><i data-lucide="link"></i>Link</button>
+      </div>
+      <div class="label">Links</div>
+    </div>
+    <div class="group">
+      <div class="content">
+        <button class="btn big" data-cmd="toc" title="Inhaltsverzeichnis aus Überschriften"><i data-lucide="list-tree"></i>Inhalts&shy;verzeichnis</button>
+        <button class="btn big" data-cmd="pageNumbers" id="pageNumBtn" title="Seitenzahlen in der Fußzeile"><i data-lucide="hash"></i>Seiten&shy;zahlen</button>
+      </div>
+      <div class="label">Verzeichnisse</div>
+    </div>
+    <div class="group">
+      <div class="content">
+        <button class="btn big" data-cmd="date" title="Datum einfügen"><i data-lucide="calendar"></i>Datum</button>
+        <button class="btn big" id="symbolBtn" title="Sonderzeichen"><i data-lucide="omega"></i>Symbol</button>
+      </div>
+      <div class="label">Text</div>
+    </div>
+  </div>
+
+  <!-- LAYOUT -->
+  <div class="pane" data-pane="layout">
+    <div class="group">
+      <div class="content">
+        <button class="btn big" id="marginsBtn"><i data-lucide="square-dashed"></i>Seiten&shy;ränder</button>
+        <button class="btn big" id="orientBtn"><i data-lucide="rotate-ccw-square"></i>Aus&shy;richtung</button>
+        <button class="btn big" id="sizeBtn"><i data-lucide="file"></i>Format</button>
+      </div>
+      <div class="label">Seite einrichten</div>
+    </div>
+    <div class="group">
+      <div class="content col">
+        <div class="row"><span style="width:90px">Abstand vor</span><input class="inp" type="number" id="spaceBefore" min="0" max="72" step="2" style="width:64px"> pt</div>
+        <div class="row"><span style="width:90px">Abstand nach</span><input class="inp" type="number" id="spaceAfter" min="0" max="72" step="2" style="width:64px"> pt</div>
+      </div>
+      <div class="label">Absatzabstand</div>
+    </div>
+  </div>
+
+  <!-- TABELLE (kontextabhaengig) -->
+  <div class="pane" data-pane="table">
+    <div class="group">
+      <div class="content">
+        <button class="btn big" data-cmd="rowAbove"><i data-lucide="between-horizontal-end"></i>Zeile oben</button>
+        <button class="btn big" data-cmd="rowBelow"><i data-lucide="between-horizontal-start"></i>Zeile unten</button>
+        <button class="btn big" data-cmd="colLeft"><i data-lucide="between-vertical-end"></i>Spalte links</button>
+        <button class="btn big" data-cmd="colRight"><i data-lucide="between-vertical-start"></i>Spalte rechts</button>
+      </div>
+      <div class="label">Zeilen und Spalten</div>
+    </div>
+    <div class="group">
+      <div class="content">
+        <button class="btn big" data-cmd="delRow"><i data-lucide="rows-3"></i>Zeile löschen</button>
+        <button class="btn big" data-cmd="delCol"><i data-lucide="columns-3"></i>Spalte löschen</button>
+        <button class="btn big" data-cmd="delTable"><i data-lucide="trash-2"></i>Tabelle löschen</button>
+      </div>
+      <div class="label">Löschen</div>
+    </div>
+    <div class="group">
+      <div class="content">
+        <button class="btn big color-btn" id="cellShadeBtn"><i data-lucide="paint-bucket"></i>Schattierung</button>
+        <button class="btn big" data-cmd="headerRow"><i data-lucide="panel-top"></i>Kopfzeile</button>
+      </div>
+      <div class="label">Tabellenformat</div>
+    </div>
+  </div>
+
+  <!-- ANSICHT -->
+  <div class="pane" data-pane="view">
+    <div class="group">
+      <div class="content">
+        <button class="btn big" data-cmd="zoomOut"><i data-lucide="zoom-out"></i>Kleiner</button>
+        <button class="btn big" data-cmd="zoom100"><i data-lucide="search"></i>100 %</button>
+        <button class="btn big" data-cmd="zoomIn"><i data-lucide="zoom-in"></i>Größer</button>
+        <button class="btn big" data-cmd="zoomWidth"><i data-lucide="move-horizontal"></i>Seiten&shy;breite</button>
+      </div>
+      <div class="label">Zoom</div>
+    </div>
+    <div class="group">
+      <div class="content">
+        <button class="btn big" data-cmd="focus"><i data-lucide="maximize"></i>Fokus&shy;modus</button>
+        <button class="btn big" data-cmd="wordCount"><i data-lucide="whole-word"></i>Wörter zählen</button>
+        <button class="btn big" data-cmd="spell" id="spellBtn"><i data-lucide="spell-check"></i>Recht&shy;schreibung</button>
+      </div>
+      <div class="label">Werkzeuge</div>
+    </div>
+  </div>
+</div>
+
+<main class="workspace" id="workspace">
+  <div class="find-bar no-print" id="findBar">
+    <input class="inp" id="findInput" placeholder="Suchen…">
+    <button class="btn" id="findPrev" title="Vorheriger Treffer"><i data-lucide="chevron-up"></i></button>
+    <button class="btn" id="findNext" title="Nächster Treffer"><i data-lucide="chevron-down"></i></button>
+    <button class="btn" id="findClose" title="Schließen"><i data-lucide="x"></i></button>
+    <div class="row" id="replaceRow" style="width:100%;gap:6px">
+      <input class="inp" id="replaceInput" placeholder="Ersetzen durch…" style="flex:1">
+      <button class="btn text" id="replaceOne">Ersetzen</button>
+      <button class="btn text" id="replaceAll">Alle</button>
+    </div>
+    <div id="findInfo" style="width:100%;color:var(--text-2);font-size:11px"></div>
+  </div>
+  <div class="page-wrap" id="pageWrap">
+    <div class="page" id="page">
+      <div class="page-lines no-print" id="pageLines"></div>
+      <div class="editor" id="editor" contenteditable="true" spellcheck="true"></div>
+      <div class="footer-num no-print" id="footerNum" hidden>Seitenzahl</div>
+    </div>
+  </div>
+  <div class="img-handle no-print" id="imgHandle" hidden></div>
+</main>
+
+<div class="statusbar">
+  <span id="stPages">Seite 1 von 1</span>
+  <span id="stWords">0 Wörter</span>
+  <span id="stChars">0 Zeichen</span>
+  <span>Deutsch (Deutschland)</span>
+  <span class="spacer"></span>
+  <button class="btn" data-cmd="zoomOut" title="Verkleinern"><i data-lucide="minus"></i></button>
+  <input type="range" id="zoomRange" min="50" max="200" step="10" value="100">
+  <button class="btn" data-cmd="zoomIn" title="Vergrößern"><i data-lucide="plus"></i></button>
+  <span id="zoomLabel" style="width:40px">100 %</span>
+</div>
+
+<script src="vendor/lucide.min.js"></script>
+<script src="vendor/jszip.min.js"></script>
+<script src="vendor/docx.umd.js"></script>
+<script src="vendor/mammoth.browser.min.js"></script>
+<script src="js/common.js"></script>
+<script src="js/docx-io.js"></script>
+<script src="js/writer.js"></script>
+</body>
+</html>

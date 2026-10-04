@@ -1,0 +1,89 @@
+/* REX Text */
+.workspace {
+  flex: 1; overflow: auto; background: var(--canvas); position: relative; user-select: text;
+}
+.page-wrap { padding: 28px 0 60px; display: flex; justify-content: center; min-width: min-content; }
+.page {
+  --page-w: 794px; --page-h: 1123px;
+  --m-top: 94px; --m-right: 94px; --m-bottom: 94px; --m-left: 94px;
+  width: var(--page-w); min-height: var(--page-h); background: #fff; color: #000;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.06), 0 2px 10px rgba(0,0,0,.18);
+  position: relative; padding: var(--m-top) var(--m-right) var(--m-bottom) var(--m-left);
+}
+:root[data-theme="dark"] .page.dark-page { background: #1e1e1e; color: #e6e6e6; }
+
+.page-lines { position: absolute; inset: 0; pointer-events: none; }
+.page-lines .pl {
+  position: absolute; left: 0; right: 0; height: 0; border-top: 1px dashed #b9b9b9;
+}
+.page-lines .pl span {
+  position: absolute; right: -78px; top: -9px; font-size: 11px; color: #8a8a8a; font-family: var(--font); white-space: nowrap;
+}
+.footer-num {
+  position: absolute; bottom: 36px; left: 0; right: 0; text-align: center; font: 10pt Calibri, Carlito, sans-serif; color: #777;
+}
+
+/* Editor-Inhalt – entspricht den Word-Standardformaten */
+.editor {
+  outline: none; min-height: calc(var(--page-h) - var(--m-top) - var(--m-bottom));
+  font-family: Calibri, Carlito, "Segoe UI", Arial, sans-serif; font-size: 11pt; line-height: 1.15;
+  word-wrap: break-word; caret-color: #000;
+}
+.editor > *:first-child { margin-top: 0; }
+.editor p, .editor div:not(.page-break) { margin: 0 0 8pt; }
+.editor h1, .editor h2, .editor h3, .editor h4 { font-family: "Calibri Light", Calibri, Carlito, sans-serif; font-weight: normal; }
+.editor h1 { font-size: 16pt; color: #2f5496; margin: 12pt 0 4pt; }
+.editor h2 { font-size: 13pt; color: #2f5496; margin: 10pt 0 4pt; }
+.editor h3 { font-size: 12pt; color: #1f3763; margin: 10pt 0 4pt; }
+.editor h4 { font-size: 11pt; color: #2f5496; font-style: italic; margin: 10pt 0 4pt; }
+.editor .title { font-family: "Calibri Light", Calibri, Carlito, sans-serif; font-size: 28pt; color: #000; margin: 0 0 4pt; font-weight: normal; letter-spacing: -.5px; line-height: 1; }
+.editor .subtitle { font-size: 11pt; color: #5a5a5a; letter-spacing: .6px; margin: 0 0 8pt; }
+.editor blockquote { font-style: italic; color: #404040; text-align: center; margin: 10pt 43pt; }
+.editor pre, .editor .code { font-family: Consolas, "Courier New", monospace; font-size: 10pt; background: #f4f4f4; padding: 6pt 8pt; margin: 0 0 8pt; white-space: pre-wrap; }
+.editor ul, .editor ol { margin: 0 0 8pt; padding-left: 36px; }
+.editor li { margin: 0; }
+.editor li > p { margin: 0; }
+.editor a { color: #0563c1; text-decoration: underline; }
+.editor img { max-width: 100%; vertical-align: bottom; cursor: default; }
+.editor img.sel { outline: 2px solid #2b579a; }
+.editor table { border-collapse: collapse; width: 100%; margin: 0 0 8pt; table-layout: fixed; }
+.editor td, .editor th { border: 1px solid #000; padding: 2pt 5.4pt; vertical-align: top; min-width: 20px; word-wrap: break-word; }
+.editor th { font-weight: bold; text-align: left; }
+.editor td > p, .editor th > p { margin: 0; }
+.editor hr { border: 0; border-top: 1px solid #a5a5a5; margin: 6pt 0 10pt; }
+.editor .page-break {
+  height: 0; margin: 14px 0; border-top: 2px dashed #9ab; position: relative; user-select: none;
+}
+.editor .page-break::after {
+  content: "Seitenumbruch"; position: absolute; left: 50%; top: -9px; transform: translateX(-50%);
+  background: #fff; color: #789; font: 11px var(--font); padding: 0 6px;
+}
+.editor .toc { border: 1px dashed #c8c8c8; padding: 6pt 8pt; margin-bottom: 10pt; }
+.editor .toc p { margin: 0 0 3pt; }
+
+/* Formatvorlagen-Galerie */
+.styles { display: grid; grid-template-columns: repeat(4, 100px); grid-auto-rows: 30px; gap: 3px; }
+.styles button {
+  border: 1px solid var(--border); background: #fff; color: #000; border-radius: 3px; cursor: pointer; overflow: hidden;
+  white-space: nowrap; text-overflow: ellipsis; padding: 0 6px; text-align: left; font-family: Calibri, Carlito, sans-serif;
+}
+.styles button:hover { border-color: var(--accent); }
+.styles button.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+
+.img-handle {
+  position: absolute; width: 12px; height: 12px; background: #fff; border: 2px solid #2b579a; border-radius: 2px;
+  cursor: nwse-resize; z-index: 20;
+}
+
+body.focus-mode .tabs, body.focus-mode .ribbon { display: none; }
+
+@media print {
+  .workspace { overflow: visible; background: #fff; }
+  .page-wrap { padding: 0; display: block; }
+  .page { box-shadow: none; zoom: 1 !important; width: auto; min-height: 0; padding: 0 !important; }
+  .editor { min-height: 0; }
+  .editor .page-break { border: 0; margin: 0; break-after: page; }
+  .editor .page-break::after { display: none; }
+  .editor .toc { border: 0; }
+  .editor img.sel { outline: 0; }
+}

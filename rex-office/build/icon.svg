@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6a4be0"/>
+      <stop offset="0.55" stop-color="#2b579a"/>
+      <stop offset="1" stop-color="#1f8a55"/>
+    </linearGradient>
+  </defs>
+  <rect x="24" y="24" width="464" height="464" rx="104" fill="url(#g)"/>
+  <rect x="104" y="112" width="176" height="224" rx="18" fill="#ffffff" opacity="0.95"/>
+  <rect x="132" y="150" width="120" height="14" rx="7" fill="#2b579a"/>
+  <rect x="132" y="180" width="96" height="14" rx="7" fill="#2b579a" opacity=".6"/>
+  <rect x="132" y="210" width="112" height="14" rx="7" fill="#2b579a" opacity=".6"/>
+  <rect x="232" y="168" width="176" height="224" rx="18" fill="#ffffff"/>
+  <rect x="258" y="196" width="40" height="28" rx="4" fill="#217346"/>
+  <rect x="306" y="196" width="40" height="28" rx="4" fill="#217346" opacity=".5"/>
+  <rect x="354" y="196" width="28" height="28" rx="4" fill="#217346" opacity=".5"/>
+  <rect x="270" y="300" width="22" height="64" rx="4" fill="#c43e1c"/>
+  <rect x="304" y="270" width="22" height="94" rx="4" fill="#c43e1c" opacity=".8"/>
+  <rect x="338" y="246" width="22" height="118" rx="4" fill="#c43e1c" opacity=".6"/>
+  <text x="256" y="462" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-weight="800" font-size="56" fill="#ffffff" letter-spacing="6">REX</text>
+</svg>
